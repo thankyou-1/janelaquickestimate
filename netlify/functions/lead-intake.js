@@ -16,7 +16,7 @@ if (!data) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    const { error: dbError } = await supabase
+        const { error: dbError } = await supabase
       .from('website_leads')
       .insert([
         {
@@ -27,7 +27,41 @@ if (!data) {
           notes: data.Notes || '',
           services: data["Selected Services"] || '',
           estimate: data["Estimated Price"] || '',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          submitted_at: new Date().toISOString(),
+
+          window_cleaning_type: data["Window Cleaning Type"] || '',
+          window_condition: data["Window Condition"] || '',
+          standard_windows: data["Standard Windows"] || '',
+          large_windows: data["Large Windows"] || '',
+          french_pane_windows: data["French Pane Windows"] || '',
+          interior_and_exterior: data["Interior and Exterior"] || '',
+          ladder_work_windows_count: data["Ladder Work Windows Count"] || '',
+          frames_tracks_sills: data["Frames Tracks Sills"] || '',
+          screens_selected: data["Screens"] || '',
+          hard_water: data["Hard Water"] || '',
+          scrape_scrub: data["Scrape Scrub"] || '',
+
+          house_square_footage: data["House Square Footage"] || '',
+          house_stories: data["House Stories"] || '',
+          house_surface_type: data["House Surface Type"] || '',
+          house_condition: data["House Condition"] || '',
+
+          surface_knows_square_footage: data["Surface Knows Square Footage"] || '',
+          surface_square_footage: data["Surface Square Footage"] || '',
+          surface_type: data["Surface Type"] || '',
+          surface_condition: data["Surface Condition"] || '',
+          surface_stain_fee: data["Surface Stain Fee"] || '',
+          surface_access_fee: data["Surface Access Fee"] || '',
+
+          roof_square_footage: data["Roof Square Footage"] || '',
+          roof_type: data["Roof Type"] || '',
+          roof_condition: data["Roof Condition"] || '',
+          roof_pitch: data["Roof Pitch"] || '',
+
+          other_service_description: data["Other Service Description"] || '',
+          base_estimate: data["Base Estimate Before Discount"] || '',
+          in_person_services: data["Services Requiring In Person Quote"] || ''
         }
       ]);
 
