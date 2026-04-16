@@ -99,13 +99,16 @@ if (!data) {
       }
     );
 
-        if (!emailResponse.ok) {
+            if (!emailResponse.ok) {
       const emailText = await emailResponse.text();
 
+      console.error('FormSubmit email failed:', emailText);
+
       return {
-        statusCode: 500,
+        statusCode: 200,
         body: JSON.stringify({
-          error: `Saved to database, but email failed: ${emailText}`
+          success: true,
+          warning: 'Lead saved to database, but email copy failed'
         })
       };
     }
