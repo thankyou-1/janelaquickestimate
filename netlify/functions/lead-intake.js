@@ -2,7 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function handler(event) {
   try {
-    const data = JSON.parse(event.body);
+    const data = event.body ? JSON.parse(event.body) : null;
+
+if (!data) {
+  return {
+    statusCode: 400,
+    body: JSON.stringify({ error: 'No form data received' })
+  };
+}
 
     const supabase = createClient(
       process.env.SUPABASE_URL,

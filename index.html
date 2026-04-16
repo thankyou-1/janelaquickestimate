@@ -1177,23 +1177,25 @@
     }
 
     async function submitLeadInBackground() {
-      const payload = buildLeadPayload();
+  const payload = buildLeadPayload();
 
-      const response = await fetch(FORM_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+  const response = await fetch(FORM_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
 
-      if (!response.ok) {
-        throw new Error('Lead submission failed');
-      }
+  const result = await response.json().catch(() => null);
 
-      return response.json();
-    }
+  if (!response.ok) {
+    throw new Error(result?.error || result?.details || 'Lead submission failed');
+  }
+
+  return result;
+}
 
     function buildSmsBody() {
       const result = calculateEstimate();
@@ -1346,8 +1348,9 @@
         document.getElementById('desktopNotice').classList.toggle('hidden', isMobileLikeDevice());
         showStep(7);
       } catch (error) {
-        alert('There was a problem sending your info. Please try again.');
-      } finally {
+  console.error('Lead submit error:', error);
+  alert(`There was a problem sending your info: ${error.message}`);
+} finally {
         showEstimateBtn.disabled = false;
         showEstimateBtn.textContent = 'Show My Estimate';
       }
