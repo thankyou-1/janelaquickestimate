@@ -45,6 +45,7 @@
 
       <nav class="hidden md:flex items-center gap-8">
         <a href="#estimator" class="font-semibold text-slate-600 hover:text-blue-900 transition">Estimator</a>
+        <a href="#reviews" class="font-semibold text-slate-600 hover:text-blue-900 transition">Reviews</a>
         <a href="tel:2295072689" class="font-bold text-blue-900">229-507-2689</a>
         <a
           href="#estimator"
@@ -52,7 +53,20 @@
         >
           Get My Quote
         </a>
+        <a
+          href="#reviews"
+          class="rounded-full bg-slate-200 px-6 py-3 text-slate-700 font-bold hover:bg-slate-300 transition"
+        >
+          Leave a Review
+        </a>
       </nav>
+
+      <!-- Mobile quick links -->
+      <div class="flex md:hidden items-center gap-2">
+        <a href="#estimator" class="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-blue-900">Quote</a>
+        <a href="#reviews" class="rounded-full bg-slate-200 px-3 py-2 text-sm font-bold text-slate-700">Review</a>
+        <a href="tel:2295072689" class="rounded-full bg-blue-900 px-3 py-2 text-sm font-bold text-white">Call</a>
+      </div>
     </div>
   </header>
 
@@ -87,6 +101,12 @@
             class="inline-flex items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-8 py-5 text-xl font-bold text-slate-700 hover:bg-slate-50 transition"
           >
             Text Kyle
+          </a>
+          <a
+            href="#reviews"
+            class="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-8 py-5 text-xl font-bold text-slate-600 hover:bg-slate-200 transition"
+          >
+            Leave a Review
           </a>
         </div>
 
@@ -124,6 +144,74 @@
       </div>
     </div>
   </section>
+
+  <!-- Service Area Map -->
+  <section class="bg-white px-4 py-10 border-t border-slate-100">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <div>
+          <div class="text-xs font-black uppercase tracking-[0.2em] text-sky-600 mb-1">Our Service Area</div>
+          <h3 class="text-xl font-black text-slate-900">Valdosta, Thomasville, Hahira, Quitman & Surrounding South Georgia</h3>
+        </div>
+        <button
+          id="expandMapBtn"
+          class="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-5 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 transition"
+        >
+          Expand Map
+        </button>
+      </div>
+      <div
+        id="mapContainer"
+        class="relative rounded-2xl overflow-hidden border border-slate-200 cursor-pointer"
+        style="height: 160px;"
+        onclick="expandMap()"
+      >
+        <iframe
+          id="serviceMap"
+          src="https://maps.google.com/maps?q=Valdosta,+GA&z=9&output=embed"
+          width="100%"
+          height="100%"
+          style="border:0; pointer-events: none;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+        <div class="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/5 transition">
+          <span class="rounded-full bg-white/90 backdrop-blur px-4 py-2 text-sm font-bold text-slate-700 shadow">Click to expand</span>
+        </div>
+      </div>
+
+      <!-- Fullscreen map overlay -->
+      <div id="mapOverlay" class="fixed inset-0 z-[999] bg-black/70 hidden items-center justify-center p-4" onclick="collapseMap(event)">
+        <div class="relative w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl" style="height: min(80vh, 600px);" onclick="event.stopPropagation()">
+          <iframe
+            src="https://maps.google.com/maps?q=Valdosta,+GA&z=9&output=embed"
+            width="100%"
+            height="100%"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+          <button onclick="collapseMap()" class="absolute top-3 right-3 rounded-full bg-white w-9 h-9 flex items-center justify-center shadow font-black text-slate-700 text-lg">✕</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function expandMap() {
+      document.getElementById('mapOverlay').classList.remove('hidden');
+      document.getElementById('mapOverlay').classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+    function collapseMap(e) {
+      document.getElementById('mapOverlay').classList.add('hidden');
+      document.getElementById('mapOverlay').classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('expandMapBtn').addEventListener('click', expandMap);
+  </script>
 
   <section id="estimator" class="bg-sky-50 px-4 py-24">
     <div class="max-w-4xl mx-auto">
@@ -274,12 +362,6 @@
               </div>
             </div>
 
-            <div id="noWindowsSelectedMessage" class="hidden rounded-2xl bg-slate-50 border border-slate-200 p-6 mb-6">
-              <p class="font-medium text-slate-600">
-                No window cleaning selected. We’ll skip this section.
-              </p>
-            </div>
-
             <div class="flex gap-4">
               <button type="button" class="prev-btn flex-1 rounded-2xl bg-slate-100 py-4 font-bold">Back</button>
               <button type="button" class="next-btn flex-[2] rounded-2xl bg-blue-900 text-white py-4 font-bold">Next</button>
@@ -331,12 +413,6 @@
                   </select>
                 </div>
               </div>
-            </div>
-
-            <div id="noHouseSelectedMessage" class="hidden rounded-2xl bg-slate-50 border border-slate-200 p-6 mb-6">
-              <p class="font-medium text-slate-600">
-                No house washing selected. We’ll skip this section.
-              </p>
             </div>
 
             <div class="flex gap-4">
@@ -415,12 +491,6 @@
               </div>
             </div>
 
-            <div id="noSurfaceSelectedMessage" class="hidden rounded-2xl bg-slate-50 border border-slate-200 p-6 mb-6">
-              <p class="font-medium text-slate-600">
-                No surface cleaning selected. We’ll skip this section.
-              </p>
-            </div>
-
             <div class="flex gap-4">
               <button type="button" class="prev-btn flex-1 rounded-2xl bg-slate-100 py-4 font-bold">Back</button>
               <button type="button" class="next-btn flex-[2] rounded-2xl bg-blue-900 text-white py-4 font-bold">Next</button>
@@ -469,12 +539,6 @@
               </div>
             </div>
 
-            <div id="noRoofSelectedMessage" class="hidden rounded-2xl bg-slate-50 border border-slate-200 p-6 mb-6">
-              <p class="font-medium text-slate-600">
-                No roof cleaning selected. We’ll skip this section.
-              </p>
-            </div>
-
             <div class="flex gap-4">
               <button type="button" class="prev-btn flex-1 rounded-2xl bg-slate-100 py-4 font-bold">Back</button>
               <button type="button" class="next-btn flex-[2] rounded-2xl bg-blue-900 text-white py-4 font-bold">Next</button>
@@ -491,18 +555,18 @@
             <div class="grid md:grid-cols-2 gap-5 mb-5">
               <div>
                 <label class="block text-sm font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Full Name</label>
-                <input name="Name" id="customerName" type="text" placeholder="Your name" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold">
+                <input name="Name" id="customerName" type="text" placeholder="Your name" required autocomplete="name" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold">
               </div>
 
               <div>
                 <label class="block text-sm font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Phone Number</label>
-                <input name="Phone" id="customerPhone" type="tel" placeholder="Your phone number" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold">
+                <input name="Phone" id="customerPhone" type="tel" placeholder="Your phone number" required autocomplete="tel" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold">
               </div>
             </div>
 
             <div class="mb-5">
               <label class="block text-sm font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Property Address</label>
-              <input name="Address" id="customerAddress" type="text" placeholder="Street address" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold">
+              <input name="Address" id="customerAddress" type="text" placeholder="Street address" required autocomplete="street-address" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold">
             </div>
 
             <div class="mb-5">
@@ -621,10 +685,14 @@
               </div>
             </div>
 
-            <div class="rounded-2xl bg-blue-50 border border-blue-100 p-4 mb-5">
-              <p class="text-sm font-medium text-slate-700">
-                We’ve already received your information and we’ll contact you shortly.
-              </p>
+            <div class="rounded-2xl bg-blue-50 border border-blue-100 p-5 mb-5">
+              <div class="font-black text-blue-900 mb-3">What happens next</div>
+              <ul class="space-y-2 text-sm font-medium text-slate-700">
+                <li class="flex gap-2"><span class="text-green-600 font-black">✓</span> Kyle or a team member will text or call you within 2 hours</li>
+                <li class="flex gap-2"><span class="text-green-600 font-black">✓</span> We’ll confirm the details, answer any questions, and get you booked</li>
+                <li class="flex gap-2"><span class="text-green-600 font-black">✓</span> Your info stays private — we never share or sell it</li>
+                <li class="flex gap-2"><span class="text-green-600 font-black">✓</span> No pressure — if you decide not to book, no problem at all</li>
+              </ul>
             </div>
 
             <div id="desktopNotice" class="hidden rounded-2xl bg-slate-50 border border-slate-200 p-4 mb-5">
@@ -644,6 +712,984 @@
       </div>
     </div>
   </section>
+
+
+
+
+  <!-- ===== REVIEWS SECTION ===== -->
+  <style>
+    #reviews-section {
+      --rv-bg: #eef5fb;
+      --rv-card: #ffffff;
+      --rv-text: #16324a;
+      --rv-muted: #607589;
+      --rv-line: #d9e6f2;
+      --rv-primary: #0b3f7a;
+      --rv-primary-2: #16589f;
+      --rv-light: #ecf4ff;
+      --rv-gold: #f4b400;
+      --rv-success-bg: #eef9f2;
+      --rv-success-text: #1a6a3a;
+      --rv-info-bg: #eef5ff;
+      --rv-info-text: #1e4d8a;
+      --rv-shadow: 0 16px 40px rgba(11,63,122,0.08);
+    }
+
+    #reviews-section {
+      background: linear-gradient(180deg, #f6fbff 0%, var(--rv-bg) 100%);
+      padding: 64px 0 80px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--rv-text);
+    }
+
+    #reviews-section .rv-shell {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+    }
+
+    #reviews-section .rv-section-label {
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--rv-primary-2);
+      margin-bottom: 10px;
+    }
+
+    #reviews-section .rv-section-title {
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--rv-primary);
+      margin: 0 0 40px;
+      line-height: 1.15;
+    }
+
+    #reviews-section .rv-hero-inner {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    #reviews-section .rv-card {
+      background: var(--rv-card);
+      border: 1px solid var(--rv-line);
+      border-radius: 24px;
+      box-shadow: var(--rv-shadow);
+      padding: 24px;
+    }
+
+    #reviews-section .rv-brand-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 28px;
+      background: var(--rv-card);
+      border: 1px solid var(--rv-line);
+      border-radius: 24px;
+      box-shadow: var(--rv-shadow);
+    }
+
+    #reviews-section .rv-brand-row .rv-logo {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    #reviews-section .rv-eyebrow {
+      margin: 0 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+      color: var(--rv-primary-2);
+      font-weight: 700;
+    }
+
+    #reviews-section .rv-brand-row h2 {
+      margin: 0 0 10px;
+      font-size: 1.9rem;
+      line-height: 1.1;
+      color: var(--rv-primary);
+      font-weight: 900;
+    }
+
+    #reviews-section .rv-hero-text {
+      margin: 0;
+      color: var(--rv-muted);
+      font-size: 0.97rem;
+      line-height: 1.6;
+    }
+
+    #reviews-section .rv-slider-card {
+      background: var(--rv-card);
+      border: 1px solid var(--rv-line);
+      border-radius: 24px;
+      box-shadow: var(--rv-shadow);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    #reviews-section .rv-slider-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    #reviews-section .rv-mini-label,
+    #reviews-section .rv-slider-count {
+      font-size: 0.9rem;
+      color: var(--rv-muted);
+      font-weight: 700;
+    }
+
+    #reviews-section .rv-slider-content {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    #reviews-section .rv-review-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e7f0fb;
+      background: #f0f6fc;
+      flex-shrink: 0;
+    }
+
+    #reviews-section .rv-stars {
+      color: var(--rv-gold);
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    #reviews-section .rv-slider-review-text {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--rv-text);
+      font-weight: 700;
+    }
+
+    #reviews-section .rv-slider-review-name {
+      margin: 0;
+      color: var(--rv-muted);
+      font-weight: 700;
+    }
+
+    #reviews-section .rv-slider-dots {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    #reviews-section .rv-slider-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #cad8e6;
+      cursor: pointer;
+      transition: 0.2s ease;
+      border: none;
+      padding: 0;
+    }
+
+    #reviews-section .rv-slider-dot.active {
+      background: var(--rv-primary-2);
+      width: 26px;
+    }
+
+    #reviews-section .rv-main-content {
+      display: grid;
+      gap: 22px;
+    }
+
+    #reviews-section .rv-action-cta {
+      text-align: center;
+      background: linear-gradient(135deg, #0b3f7a 0%, #16589f 100%);
+      color: white;
+      border-radius: 24px;
+      padding: 32px 24px;
+    }
+
+    #reviews-section .rv-action-cta h3 {
+      margin: 0 0 8px;
+      color: white;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    #reviews-section .rv-action-cta p {
+      margin: 0 0 18px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    #reviews-section .rv-action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    #reviews-section .rv-btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 24px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    #reviews-section .rv-btn:hover { transform: translateY(-1px); }
+
+    #reviews-section .rv-btn-primary {
+      background: white;
+      color: #0b3f7a;
+    }
+
+    #reviews-section .rv-btn-secondary {
+      background: rgba(255,255,255,0.16);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    #reviews-section .rv-btn-outline {
+      background: var(--rv-light);
+      color: var(--rv-primary);
+      border: 1px solid #cfe0f2;
+    }
+
+    #reviews-section .rv-full-width { width: 100%; }
+
+    #reviews-section details summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      font-weight: 700;
+      color: var(--rv-primary);
+    }
+
+    #reviews-section details summary::-webkit-details-marker { display: none; }
+
+    #reviews-section .rv-summary-arrow { font-size: 1.2rem; color: var(--rv-muted); }
+
+    #reviews-section .rv-all-reviews {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    #reviews-section .rv-review-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--rv-line);
+      background: #fbfdff;
+    }
+
+    #reviews-section .rv-review-item-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid #e7f0fb;
+    }
+
+    #reviews-section .rv-review-item-content p {
+      margin: 0 0 8px;
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    #reviews-section .rv-review-item-content small {
+      color: var(--rv-muted);
+      font-weight: 700;
+    }
+
+    #reviews-section #rv-reviewFormCard,
+    #reviews-section #rv-surveyFormCard {
+      display: none;
+    }
+
+    #reviews-section .rv-form-card h3 {
+      margin: 0 0 8px;
+      color: var(--rv-primary);
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    #reviews-section .rv-section-subtext {
+      margin: 0 0 20px;
+      color: var(--rv-muted);
+      line-height: 1.6;
+    }
+
+    #reviews-section .rv-field { margin-bottom: 16px; }
+
+    #reviews-section .rv-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: var(--rv-text);
+    }
+
+    #reviews-section .rv-field input,
+    #reviews-section .rv-field select,
+    #reviews-section .rv-field textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #cfe0f2;
+      border-radius: 14px;
+      font-size: 1rem;
+      background: #fff;
+      color: var(--rv-text);
+      box-sizing: border-box;
+    }
+
+    #reviews-section .rv-field textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    #reviews-section .rv-field input:focus,
+    #reviews-section .rv-field select:focus,
+    #reviews-section .rv-field textarea:focus {
+      outline: 2px solid #dbe9f7;
+      border-color: #b9d1ea;
+    }
+
+    #reviews-section .rv-fine-print {
+      margin: 12px 0 0;
+      font-size: 0.88rem;
+      color: var(--rv-muted);
+    }
+
+    #reviews-section .rv-message {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    #reviews-section .rv-message.show { display: block; }
+
+    #reviews-section .rv-message.success {
+      background: var(--rv-success-bg);
+      color: var(--rv-success-text);
+      border: 1px solid #d0ecd9;
+    }
+
+    #reviews-section .rv-message.info {
+      background: var(--rv-info-bg);
+      color: var(--rv-info-text);
+      border: 1px solid #d7e6fb;
+    }
+
+    #reviews-section .rv-review-prompt {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--rv-line);
+    }
+
+    #reviews-section .rv-review-prompt p {
+      margin: 0 0 14px;
+      color: var(--rv-text);
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    #reviews-section .rv-hidden { display: none !important; }
+
+    #reviews-section .rv-avatar-picker {
+      display: flex;
+      gap: 12px;
+    }
+
+    #reviews-section .rv-gender-btn {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: 2px solid var(--rv-line);
+      background: #f8fbff;
+      color: #607589;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition: 0.18s ease;
+    }
+
+    #reviews-section .rv-gender-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    #reviews-section .rv-gender-btn.active {
+      border-color: var(--rv-primary-2);
+      background: var(--rv-light);
+      color: var(--rv-primary);
+    }
+
+    #reviews-section .rv-color-picker {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #reviews-section .rv-color-swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: 0.15s ease;
+      padding: 0;
+    }
+
+    #reviews-section .rv-color-swatch.active {
+      border-color: var(--rv-text);
+      transform: scale(1.18);
+    }
+
+    #reviews-section .rv-icon-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #reviews-section .rv-icon-avatar svg {
+      width: 42px;
+      height: 42px;
+      color: white;
+      fill: white;
+    }
+
+    #reviews-section .rv-icon-avatar-sm {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #reviews-section .rv-icon-avatar-sm svg {
+      width: 34px;
+      height: 34px;
+      fill: white;
+    }
+
+    @media (max-width: 920px) {
+      #reviews-section .rv-hero-inner { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      #reviews-section .rv-slider-content,
+      #reviews-section .rv-review-item { flex-direction: column; }
+      #reviews-section .rv-section-title { font-size: 1.7rem; }
+      #reviews-section .rv-action-buttons .rv-btn { width: 100%; }
+    }
+  </style>
+
+  <section id="reviews">
+    <div id="reviews-section">
+      <div class="rv-shell">
+        <p class="rv-section-label">Customer Feedback</p>
+        <h2 class="rv-section-title">How Did We Do?</h2>
+
+        <div class="rv-hero-inner">
+          <div class="rv-brand-row">
+            <img src="logo.png" alt="Janela Enterprise logo" class="rv-logo" />
+            <div>
+              <p class="rv-eyebrow">Janela Enterprise</p>
+              <h2>Reviews & Feedback</h2>
+              <p class="rv-hero-text">
+                We take pride in the work we do. Your feedback helps us keep that standard high
+                and helps other homeowners feel confident choosing us.
+              </p>
+            </div>
+          </div>
+
+          <div class="rv-slider-card">
+            <div class="rv-slider-top">
+              <span class="rv-mini-label">Customer Reviews</span>
+              <span id="rv-sliderCount" class="rv-slider-count"></span>
+            </div>
+            <div class="rv-slider-content">
+              <div id="rv-sliderAvatarWrap"></div>
+              <div>
+                <div id="rv-sliderStars" class="rv-stars">★★★★★</div>
+                <p id="rv-sliderText" class="rv-slider-review-text"></p>
+                <p id="rv-sliderName" class="rv-slider-review-name"></p>
+              </div>
+            </div>
+            <div id="rv-sliderDots" class="rv-slider-dots"></div>
+          </div>
+        </div>
+
+        <div class="rv-main-content">
+          <div class="rv-action-cta">
+            <h3>Leave a review or take a quick survey</h3>
+            <p>Choose one below to get started.</p>
+            <div class="rv-action-buttons">
+              <button id="rv-showReviewBtn" class="rv-btn rv-btn-primary">Leave a Review</button>
+              <button id="rv-showSurveyBtn" class="rv-btn rv-btn-secondary">Take a Quick Survey</button>
+            </div>
+          </div>
+
+          <div class="rv-card">
+            <details>
+              <summary>
+                <span>See All Reviews</span>
+                <span class="rv-summary-arrow">⌄</span>
+              </summary>
+              <div id="rv-allReviews" class="rv-all-reviews"></div>
+            </details>
+          </div>
+
+          <div id="rv-reviewFormCard" class="rv-card rv-form-card">
+            <h3>Share Your Experience</h3>
+            <p class="rv-section-subtext">
+              If you were happy with the service, we'd really appreciate you sharing a quick review.
+            </p>
+            <form id="rv-reviewForm">
+              <div class="rv-field">
+                <label for="rv-reviewName">Name</label>
+                <input id="rv-reviewName" type="text" placeholder="Your name" />
+              </div>
+
+              <div class="rv-field">
+                <label>Choose an icon</label>
+                <div class="rv-avatar-picker">
+                  <button type="button" class="rv-gender-btn active" data-gender="male" aria-label="Male">
+                    <svg viewBox="0 0 64 64" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="32" cy="20" r="13"/>
+                      <path d="M10 58c0-12.15 9.85-22 22-22s22 9.85 22 22H10z"/>
+                    </svg>
+                    <span>Male</span>
+                  </button>
+                  <button type="button" class="rv-gender-btn" data-gender="female" aria-label="Female">
+                    <svg viewBox="0 0 64 64" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <!-- shoulder-length hair: wide panel down each side, bangs curve across forehead -->
+                      <path d="M16 20 Q16 4 32 4 Q48 4 48 20 L48 38 Q46 44 40 44 L24 44 Q18 44 16 38 Z"/>
+                      <!-- face circle cutout using button background color -->
+                      <circle cx="32" cy="21" r="11" fill="#f8fbff"/>
+                      <!-- re-draw face silhouette so it reads as face inside hair -->
+                      <circle cx="32" cy="21" r="9"/>
+                      <!-- body -->
+                      <path d="M10 62c0-12.15 9.85-22 22-22s22 9.85 22 22H10z"/>
+                    </svg>
+                    <span>Female</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="rv-field">
+                <label>Pick a color for your avatar</label>
+                <div class="rv-color-picker">
+                  <button type="button" class="rv-color-swatch active" data-color="#2563eb" style="background:#2563eb" aria-label="Blue"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#16a34a" style="background:#16a34a" aria-label="Green"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#dc2626" style="background:#dc2626" aria-label="Red"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#9333ea" style="background:#9333ea" aria-label="Purple"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#ea580c" style="background:#ea580c" aria-label="Orange"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#0891b2" style="background:#0891b2" aria-label="Teal"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#be185d" style="background:#be185d" aria-label="Pink"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#ca8a04" style="background:#ca8a04" aria-label="Yellow"></button>
+                  <button type="button" class="rv-color-swatch" data-color="#475569" style="background:#475569" aria-label="Slate"></button>
+                </div>
+              </div>
+
+              <div class="rv-field">
+                <label for="rv-reviewRating">Star Rating</label>
+                <select id="rv-reviewRating" required>
+                  <option value="">Select rating</option>
+                  <option value="5">5 Stars</option>
+                  <option value="4">4 Stars</option>
+                  <option value="3">3 Stars</option>
+                  <option value="2">2 Stars</option>
+                  <option value="1">1 Star</option>
+                </select>
+              </div>
+              <div class="rv-field">
+                <label for="rv-reviewText">Tell us about your experience</label>
+                <textarea id="rv-reviewText" placeholder="What stood out to you about the service?" required></textarea>
+              </div>
+              <button type="submit" class="rv-btn rv-btn-primary rv-full-width" style="background:#0b3f7a;color:#fff;">Submit Review</button>
+              <p class="rv-fine-print">We read every review and use your feedback to continue improving our service.</p>
+              <div id="rv-reviewMessage" class="rv-message"></div>
+            </form>
+          </div>
+
+          <div id="rv-surveyFormCard" class="rv-card rv-form-card">
+            <h3>Quick Feedback</h3>
+            <p class="rv-section-subtext">
+              We're always looking to improve. This short survey helps us understand what we did well and where we can get better.
+            </p>
+            <form id="rv-surveyForm">
+              <div class="rv-field">
+                <label for="rv-surveyName">Name</label>
+                <input id="rv-surveyName" type="text" placeholder="Your name (optional)" />
+              </div>
+              <div class="rv-field">
+                <label for="rv-q1">How satisfied were you with the overall service?</label>
+                <select id="rv-q1" required>
+                  <option value="">Select one</option>
+                  <option value="1">Very Dissatisfied</option><option value="2">Dissatisfied</option>
+                  <option value="3">Neutral</option><option value="4">Satisfied</option>
+                  <option value="5">Very Satisfied</option>
+                </select>
+              </div>
+              <div class="rv-field">
+                <label for="rv-q2">How satisfied were you with the final results?</label>
+                <select id="rv-q2" required>
+                  <option value="">Select one</option>
+                  <option value="1">Very Dissatisfied</option><option value="2">Dissatisfied</option>
+                  <option value="3">Neutral</option><option value="4">Satisfied</option>
+                  <option value="5">Very Satisfied</option>
+                </select>
+              </div>
+              <div class="rv-field">
+                <label for="rv-q3">How satisfied were you with the professionalism and communication?</label>
+                <select id="rv-q3" required>
+                  <option value="">Select one</option>
+                  <option value="1">Very Dissatisfied</option><option value="2">Dissatisfied</option>
+                  <option value="3">Neutral</option><option value="4">Satisfied</option>
+                  <option value="5">Very Satisfied</option>
+                </select>
+              </div>
+              <div class="rv-field">
+                <label for="rv-q4">How satisfied were you with the overall process from start to finish?</label>
+                <select id="rv-q4" required>
+                  <option value="">Select one</option>
+                  <option value="1">Very Dissatisfied</option><option value="2">Dissatisfied</option>
+                  <option value="3">Neutral</option><option value="4">Satisfied</option>
+                  <option value="5">Very Satisfied</option>
+                </select>
+              </div>
+              <div class="rv-field">
+                <label for="rv-q5">How likely are you to recommend us to a friend or neighbor?</label>
+                <select id="rv-q5" required>
+                  <option value="">Select one</option>
+                  <option value="1">Very Unlikely</option><option value="2">Unlikely</option>
+                  <option value="3">Neutral</option><option value="4">Likely</option>
+                  <option value="5">Very Likely</option>
+                </select>
+              </div>
+              <button type="submit" class="rv-btn rv-btn-primary rv-full-width" style="background:#0b3f7a;color:#fff;">Submit Survey</button>
+              <div id="rv-surveyMessage" class="rv-message"></div>
+              <div id="rv-reviewPrompt" class="rv-review-prompt rv-hidden">
+                <p>Appreciate you taking the time. That means a lot. If you'd be open to it, would you mind sharing a quick review as well?</p>
+                <button type="button" id="rv-reviewPromptBtn" class="rv-btn rv-btn-outline rv-full-width">Leave a Review</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5L1rgnVS4Ii7hoJFGgr4J3mWSP1ByAOU",
+      authDomain: "janela-reviews.firebaseapp.com",
+      projectId: "janela-reviews",
+      storageBucket: "janela-reviews.firebasestorage.app",
+      messagingSenderId: "252514685388",
+      appId: "1:252514685388:web:ae58d7830fe847f09c0d69"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const MALE_SVG = `<svg viewBox="0 0 64 64" fill="white" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="20" r="13"/><path d="M10 58c0-12.15 9.85-22 22-22s22 9.85 22 22H10z"/></svg>`;
+    const FEMALE_SVG = `<svg viewBox="0 0 64 64" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M16 20 Q16 4 32 4 Q48 4 48 20 L48 38 Q46 44 40 44 L24 44 Q18 44 16 38 Z"/><circle cx="32" cy="21" r="9"/><path d="M10 62c0-12.15 9.85-22 22-22s22 9.85 22 22H10z"/></svg>`;
+
+    function avatarHtml(review, size = "large") {
+      const cls = size === "large" ? "rv-icon-avatar" : "rv-icon-avatar-sm";
+      const color = review.avatarColor || "#2563eb";
+      const svg = review.gender === "female" ? FEMALE_SVG : MALE_SVG;
+      return `<div class="${cls}" style="background:${color}">${svg}</div>`;
+    }
+
+    const starterReviews = [
+      { name: "Sarah M.", rating: 5, text: "Honestly didn't realize how much of a difference it would make until it was done. The windows and siding look brand new. Super easy process from start to finish.", gender: "female", avatarColor: "#9333ea" },
+      { name: "James R.", rating: 5, text: "Showed up on time, explained everything clearly, and took care of the whole house without any hassle. You can tell they actually care about doing it right.", gender: "male", avatarColor: "#2563eb" },
+      { name: "Amanda T.", rating: 5, text: "House looked dull before, now it actually stands out again. Really solid work and very professional the whole way through.", gender: "female", avatarColor: "#be185d" },
+      { name: "Michael D.", rating: 5, text: "The whole place looked brighter the second they finished. Clean, professional, and very easy to work with.", gender: "male", avatarColor: "#16a34a" },
+      { name: "Lauren P.", rating: 5, text: "We booked for one service and ended up doing more because of how thorough everything looked. The results were absolutely worth it.", gender: "female", avatarColor: "#0891b2" },
+      { name: "Chris B.", rating: 5, text: "They walked me around everything after they finished and pointed out the differences. You could actually see where it was cleaned versus before. Definitely worth it.", gender: "male", avatarColor: "#ea580c" }
+    ];
+
+    let publicReviews = [...starterReviews];
+    let currentSlide = 0;
+    let sliderTimer = null;
+
+    let selectedGender = "male";
+    let selectedColor = "#2563eb";
+
+    const sliderStars = document.getElementById("rv-sliderStars");
+    const sliderText = document.getElementById("rv-sliderText");
+    const sliderName = document.getElementById("rv-sliderName");
+    const sliderDots = document.getElementById("rv-sliderDots");
+    const sliderCount = document.getElementById("rv-sliderCount");
+    const allReviews = document.getElementById("rv-allReviews");
+    const reviewFormCard = document.getElementById("rv-reviewFormCard");
+    const surveyFormCard = document.getElementById("rv-surveyFormCard");
+    const reviewMessage = document.getElementById("rv-reviewMessage");
+    const surveyMessage = document.getElementById("rv-surveyMessage");
+    const reviewPrompt = document.getElementById("rv-reviewPrompt");
+
+    function escapeHtml(str = "") {
+      return str.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    }
+
+    function showOnlyCard(type) {
+      reviewFormCard.style.display = type === "review" ? "block" : "none";
+      surveyFormCard.style.display = type === "survey" ? "block" : "none";
+      const target = type === "review" ? reviewFormCard : surveyFormCard;
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function showMessage(el, text, type = "info") { el.textContent = text; el.className = `rv-message show ${type}`; }
+    function clearMessage(el) { el.textContent = ""; el.className = "rv-message"; }
+
+    function buildDots() {
+      sliderDots.innerHTML = "";
+      publicReviews.forEach((_, index) => {
+        const dot = document.createElement("button");
+        dot.className = `rv-slider-dot ${index === currentSlide ? "active" : ""}`;
+        dot.type = "button";
+        dot.setAttribute("aria-label", `Show review ${index + 1}`);
+        dot.addEventListener("click", () => { currentSlide = index; renderSlider(); restartSlider(); });
+        sliderDots.appendChild(dot);
+      });
+    }
+
+    function renderSlider() {
+      if (!publicReviews.length) return;
+      const review = publicReviews[currentSlide];
+      const sliderAvatarWrap = document.getElementById("rv-sliderAvatarWrap");
+      sliderAvatarWrap.innerHTML = avatarHtml(review, "large");
+      sliderStars.textContent = "★".repeat(Number(review.rating || 5));
+      sliderText.textContent = `"${review.text}"`;
+      sliderName.textContent = `— ${review.name}`;
+      sliderCount.textContent = `${currentSlide + 1} / ${publicReviews.length}`;
+      [...sliderDots.children].forEach((dot, index) => dot.classList.toggle("active", index === currentSlide));
+    }
+
+    function renderAllReviews() {
+      allReviews.innerHTML = publicReviews.map(review => `
+        <article class="rv-review-item">
+          ${avatarHtml(review, "small")}
+          <div class="rv-review-item-content">
+            <div class="rv-stars">${"★".repeat(Number(review.rating || 5))}</div>
+            <p>"${escapeHtml(review.text)}"</p>
+            <small>— ${escapeHtml(review.name)}</small>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function restartSlider() {
+      if (sliderTimer) clearInterval(sliderTimer);
+      sliderTimer = setInterval(() => { currentSlide = (currentSlide + 1) % publicReviews.length; renderSlider(); }, 4200);
+    }
+
+    function renderEverything() {
+      if (!publicReviews.length) publicReviews = [...starterReviews];
+      if (currentSlide >= publicReviews.length) currentSlide = 0;
+      buildDots(); renderSlider(); renderAllReviews(); restartSlider();
+    }
+
+    async function loadPublicReviews() {
+      renderEverything();
+      try {
+        const q = query(collection(db, "publicReviews"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const dbReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        publicReviews = [...starterReviews, ...dbReviews];
+        renderEverything();
+      } catch (error) {
+        console.error("Error loading Firestore reviews:", error);
+        publicReviews = [...starterReviews];
+        renderEverything();
+      }
+    }
+
+    document.querySelectorAll(".rv-gender-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedGender = btn.dataset.gender;
+        document.querySelectorAll(".rv-gender-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    document.querySelectorAll(".rv-color-swatch").forEach(swatch => {
+      swatch.addEventListener("click", () => {
+        selectedColor = swatch.dataset.color;
+        document.querySelectorAll(".rv-color-swatch").forEach(s => s.classList.remove("active"));
+        swatch.classList.add("active");
+      });
+    });
+
+    document.getElementById("rv-showReviewBtn").addEventListener("click", () => showOnlyCard("review"));
+    document.getElementById("rv-showSurveyBtn").addEventListener("click", () => showOnlyCard("survey"));
+    document.getElementById("rv-reviewPromptBtn").addEventListener("click", () => showOnlyCard("review"));
+
+    document.getElementById("rv-reviewForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessage(reviewMessage);
+      const name = document.getElementById("rv-reviewName").value.trim() || "Anonymous";
+      const rating = Number(document.getElementById("rv-reviewRating").value);
+      const text = document.getElementById("rv-reviewText").value.trim();
+      if (!rating || !text) { showMessage(reviewMessage, "Please complete the rating and review fields.", "info"); return; }
+      try {
+        if (rating >= 4) {
+          await addDoc(collection(db, "publicReviews"), { name, rating, text, gender: selectedGender, avatarColor: selectedColor, createdAt: serverTimestamp() });
+          showMessage(reviewMessage, "Thank you for your review. Your feedback has been submitted.", "success");
+          e.target.reset();
+          await loadPublicReviews();
+        } else {
+          await addDoc(collection(db, "privateFeedback"), { name, rating, text, gender: selectedGender, avatarColor: selectedColor, createdAt: serverTimestamp() });
+          showMessage(reviewMessage, "Thank you for your feedback. We appreciate you sharing your experience and will use it to improve.", "info");
+          e.target.reset();
+        }
+      } catch (err) { console.error(err); showMessage(reviewMessage, "Something went wrong while submitting your review. Please try again.", "info"); }
+    });
+
+    document.getElementById("rv-surveyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessage(surveyMessage);
+      reviewPrompt.classList.add("rv-hidden");
+      const name = document.getElementById("rv-surveyName").value.trim() || "Anonymous";
+      const q1 = Number(document.getElementById("rv-q1").value);
+      const q2 = Number(document.getElementById("rv-q2").value);
+      const q3 = Number(document.getElementById("rv-q3").value);
+      const q4 = Number(document.getElementById("rv-q4").value);
+      const q5 = Number(document.getElementById("rv-q5").value);
+      if (![q1,q2,q3,q4,q5].every(Boolean)) { showMessage(surveyMessage, "Please answer all survey questions before submitting.", "info"); return; }
+      const answers = [q1,q2,q3,q4,q5];
+      const positiveCount = answers.filter(v => v >= 4).length;
+      try {
+        await addDoc(collection(db, "surveyResponses"), { name, q1, q2, q3, q4, q5, positiveCount, createdAt: serverTimestamp() });
+        if (positiveCount >= 4) {
+          showMessage(surveyMessage, "Appreciate you taking the time. Based on your feedback, you may qualify for 20% off your next service.", "success");
+          reviewPrompt.classList.remove("rv-hidden");
+        } else {
+          showMessage(surveyMessage, "Thank you for your feedback. We take this seriously and use it to improve our service.", "info");
+        }
+        e.target.reset();
+      } catch (err) { console.error(err); showMessage(surveyMessage, "Something went wrong while submitting your survey. Please try again.", "info"); }
+    });
+
+    // Swipe listener (dispatched from global script)
+    document.addEventListener('rv-swipe', function(e) {
+      if (e.detail.dir === 'next') {
+        currentSlide = (currentSlide + 1) % publicReviews.length;
+      } else {
+        currentSlide = (currentSlide - 1 + publicReviews.length) % publicReviews.length;
+      }
+      renderSlider();
+      restartSlider();
+    });
+
+    showOnlyCard("review");
+    loadPublicReviews();
+  </script>
+
+  <!-- FAQ Section -->
+  <section class="bg-white px-4 py-16 border-t border-slate-100">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-10">
+        <div class="text-xs font-black uppercase tracking-[0.2em] text-sky-600 mb-2">Got Questions?</div>
+        <h2 class="text-3xl md:text-4xl font-black text-slate-900">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="space-y-3" id="faqList">
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const faqs = [
+      {
+        q: "Do I need to be home during the cleaning?",
+        a: "Not necessarily. As long as we have access to the areas being cleaned and a way to reach you if anything comes up, most jobs can be done while you're away. We'll confirm details ahead of time."
+      },
+      {
+        q: "How long does the job take?",
+        a: "Most jobs take between 1–3 hours depending on the size of your home and the services you've selected. We'll give you a better time estimate when we follow up after your quote."
+      },
+      {
+        q: "Are the chemicals you use safe for my plants and pets?",
+        a: "Yes. We use soft wash solutions that are safe for landscaping, pets, and surrounding surfaces. We take care to rinse plants before and after and keep runoff to a minimum."
+      },
+      {
+        q: "What's the difference between the online estimate and the final price?",
+        a: "The online estimate is a ballpark based on typical jobs in your area. The final price is confirmed after we review the actual size, condition, and access. We'll always communicate any differences before starting work."
+      },
+      {
+        q: "What areas do you serve?",
+        a: "We serve Valdosta, Thomasville, Hahira, Quitman, and surrounding South Georgia communities. Not sure if you're in range? Just text us and we'll let you know."
+      },
+      {
+        q: "Do you offer recurring or scheduled service?",
+        a: "Yes. Many of our customers schedule regular cleanings — quarterly, semi-annually, or annually. Ask us about recurring service when we follow up and we'll work out a schedule that fits."
+      },
+      {
+        q: "What forms of payment do you accept?",
+        a: "We accept cash, check, and all major cards. Payment is due upon completion of the job unless otherwise arranged."
+      },
+      {
+        q: "What if it rains on my scheduled day?",
+        a: "Light rain doesn't always stop us — some exterior cleaning is actually done in the rain. If conditions are bad enough to reschedule, we'll reach out ahead of time to find a new day that works for you."
+      }
+    ];
+
+    const faqList = document.getElementById('faqList');
+    faqs.forEach((item, i) => {
+      const el = document.createElement('details');
+      el.className = 'group rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden';
+      el.innerHTML = `
+        <summary class="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer font-bold text-slate-900 list-none select-none hover:bg-slate-100 transition">
+          <span>${item.q}</span>
+          <span class="shrink-0 text-slate-400 text-xl transition-transform group-open:rotate-45">+</span>
+        </summary>
+        <div class="px-6 pb-5 text-slate-600 font-medium leading-7 border-t border-slate-200 pt-4">${item.a}</div>
+      `;
+      faqList.appendChild(el);
+    });
+  </script>
 
   <footer class="bg-slate-900 text-white px-4 py-16 border-t border-white/10">
     <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
@@ -814,15 +1860,19 @@
     const otherServiceText = document.getElementById('otherServiceText');
     const scheduleQuoteBtn = document.getElementById('scheduleQuoteBtn');
 
-    stepTotal.textContent = TOTAL_STEPS;
-
     function showStep(step) {
       steps.forEach(s => s.classList.add('hidden'));
       document.querySelector(`.step[data-step="${step}"]`).classList.remove('hidden');
       currentStep = step;
-      stepNumber.textContent = step;
-      progressBar.style.width = `${(step / TOTAL_STEPS) * 100}%`;
-      updateStepVisibility();
+
+      const active = getActiveFormSteps();
+      const pos = active.indexOf(step);
+      const displayPos = pos !== -1 ? pos + 1 : active.length + 1;
+      const displayTotal = active.length;
+      stepNumber.textContent = displayPos;
+      stepTotal.textContent = displayTotal;
+      progressBar.style.width = `${(displayPos / displayTotal) * 100}%`;
+
       toggleWindowConditionVisibility();
     }
 
@@ -862,23 +1912,32 @@
       });
     }
 
+    // Returns the ordered list of active form steps based on selected services
+    // Step 1 = service selection, 2=windows, 3=house, 4=surface, 5=roof, 6=contact, 7=estimate
+    function getActiveFormSteps() {
+      const active = [1];
+      if (selectedServices.includes('windows')) active.push(2);
+      if (selectedServices.includes('house')) active.push(3);
+      if (selectedServices.includes('surface')) active.push(4);
+      if (selectedServices.includes('roof')) active.push(5);
+      active.push(6);
+      return active;
+    }
+
+    function getNextStep(current) {
+      const active = getActiveFormSteps();
+      const idx = active.indexOf(current);
+      return (idx !== -1 && idx < active.length - 1) ? active[idx + 1] : null;
+    }
+
+    function getPrevStep(current) {
+      const active = getActiveFormSteps();
+      const idx = active.indexOf(current);
+      return idx > 0 ? active[idx - 1] : null;
+    }
+
     function updateStepVisibility() {
-      const windowsSelected = selectedServices.includes('windows');
-      const houseSelected = selectedServices.includes('house');
-      const surfaceSelected = selectedServices.includes('surface');
-      const roofSelected = selectedServices.includes('roof');
-
-      document.getElementById('windowsStepWrap').classList.toggle('hidden', !windowsSelected);
-      document.getElementById('noWindowsSelectedMessage').classList.toggle('hidden', windowsSelected);
-
-      document.getElementById('houseStepWrap').classList.toggle('hidden', !houseSelected);
-      document.getElementById('noHouseSelectedMessage').classList.toggle('hidden', houseSelected);
-
-      document.getElementById('surfaceStepWrap').classList.toggle('hidden', !surfaceSelected);
-      document.getElementById('noSurfaceSelectedMessage').classList.toggle('hidden', surfaceSelected);
-
-      document.getElementById('roofStepWrap').classList.toggle('hidden', !roofSelected);
-      document.getElementById('noRoofSelectedMessage').classList.toggle('hidden', roofSelected);
+      // No-op: steps are skipped in navigation, not shown with a message
     }
 
     function toggleWindowConditionVisibility() {
@@ -1314,18 +2373,16 @@
       if (!validateCurrentStep()) return;
       selectedServices = getSelectedServices();
       updateHiddenFields();
-      showStep(2);
+      const next = getNextStep(1);
+      if (next) showStep(next);
     });
 
     nextButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         if (!validateCurrentStep()) return;
-
         updateHiddenFields();
-
-        if (currentStep < 6) {
-          showStep(currentStep + 1);
-        }
+        const next = getNextStep(currentStep);
+        if (next) showStep(next);
       });
     });
 
@@ -1358,9 +2415,8 @@
 
     prevButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        if (currentStep > 1) {
-          showStep(currentStep - 1);
-        }
+        const prev = getPrevStep(currentStep);
+        if (prev) showStep(prev);
       });
     });
 
@@ -1429,5 +2485,62 @@
     toggleWindowConditionVisibility();
     updateHiddenFields();
   </script>
+
+  <!-- Sticky Mobile CTA -->
+  <div id="stickyBar" class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 flex gap-3 translate-y-full transition-transform duration-300">
+    <a
+      href="#reviews"
+      onclick="openAllReviews()"
+      class="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-700 text-center hover:bg-slate-200 transition"
+    >
+      ⭐ See Reviews
+    </a>
+    <a
+      href="#estimator"
+      class="flex-1 rounded-xl bg-blue-900 py-3 text-sm font-bold text-white text-center hover:bg-blue-800 transition"
+    >
+      Get My Quote →
+    </a>
+  </div>
+
+  <script>
+    // Show sticky bar after scrolling past hero
+    (function() {
+      const bar = document.getElementById('stickyBar');
+      let shown = false;
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 400 && !shown) {
+          bar.style.transform = 'translateY(0)';
+          shown = true;
+        } else if (window.scrollY <= 100 && shown) {
+          bar.style.transform = 'translateY(100%)';
+          shown = false;
+        }
+      }, { passive: true });
+    })();
+
+    // Open "See All Reviews" details when clicking sticky reviews button
+    function openAllReviews() {
+      setTimeout(function() {
+        const details = document.querySelector('#rv-allReviews')?.closest('details');
+        if (details) details.open = true;
+      }, 400);
+    }
+
+    // Swipe support for reviews slider
+    (function() {
+      const sliderEl = document.getElementById('rv-sliderAvatarWrap')?.closest('.rv-slider-content');
+      if (!sliderEl) return;
+
+      let startX = 0;
+      sliderEl.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, { passive: true });
+      sliderEl.addEventListener('touchend', function(e) {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) < 40) return;
+
+        // Access the module-scoped slider state via custom events
+        sliderEl.dispatchEvent(new CustomEvent('rv-swipe', { detail: { dir: diff > 0 ? 'next' : 'prev' }, bubbles: true }));
+      }, { passive: true });
+    })();
+  </script>
 </body>
-</html>

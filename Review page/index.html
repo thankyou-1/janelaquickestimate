@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Janela Enterprise | Reviews & Survey</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="brand-row">
+          <img src="logo.png" alt="Janela Enterprise logo" class="logo" />
+          <div class="brand-copy">
+            <p class="eyebrow">Janela Enterprise</p>
+            <h1>How Did We Do?</h1>
+            <p class="hero-text">
+              We take pride in the work we do. Your feedback helps us keep that standard high
+              and helps other homeowners feel confident choosing us.
+            </p>
+          </div>
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-top">
+            <span class="mini-label">Customer Reviews</span>
+            <span id="sliderCount" class="slider-count"></span>
+          </div>
+
+          <div class="slider-content">
+            <div class="review-avatar-wrap">
+              <img id="sliderAvatar" class="review-avatar" src="" alt="Reviewer profile" />
+            </div>
+
+            <div class="review-main">
+              <div id="sliderStars" class="stars">★★★★★</div>
+              <p id="sliderText" class="slider-review-text"></p>
+              <p id="sliderName" class="slider-review-name"></p>
+            </div>
+          </div>
+
+          <div id="sliderDots" class="slider-dots"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="card action-cta">
+        <h2>Leave a review or take a quick survey</h2>
+        <p>Choose one below to get started.</p>
+        <div class="action-buttons centered-buttons">
+          <button id="showReviewBtn" class="btn btn-primary">Leave a Review</button>
+          <button id="showSurveyBtn" class="btn btn-secondary">Take a Quick Survey</button>
+        </div>
+      </section>
+
+      <section class="reviews-section card">
+        <details>
+          <summary>
+            <span>See All Reviews</span>
+            <span class="summary-arrow">⌄</span>
+          </summary>
+          <div id="allReviews" class="all-reviews"></div>
+        </details>
+      </section>
+
+      <section class="forms-grid single-flow">
+        <section id="reviewFormCard" class="card form-card">
+          <h3>Share Your Experience</h3>
+          <p class="section-subtext">
+            If you were happy with the service, we’d really appreciate you sharing a quick review.
+          </p>
+
+          <form id="reviewForm">
+            <div class="field">
+              <label for="reviewName">Name</label>
+              <input id="reviewName" type="text" placeholder="Your name" />
+            </div>
+
+            <div class="field">
+              <label for="reviewRating">Star Rating</label>
+              <select id="reviewRating" required>
+                <option value="">Select rating</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="reviewText">Tell us about your experience</label>
+              <textarea
+                id="reviewText"
+                placeholder="What stood out to you about the service?"
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary full-width">Submit Review</button>
+            <p class="fine-print">
+              We read every review and use your feedback to continue improving our service.
+            </p>
+            <div id="reviewMessage" class="message"></div>
+          </form>
+        </section>
+
+        <section id="surveyFormCard" class="card form-card">
+          <h3>Quick Feedback</h3>
+          <p class="section-subtext">
+            We’re always looking to improve. This short survey helps us understand what we did
+            well and where we can get better.
+          </p>
+
+          <form id="surveyForm">
+            <div class="field">
+              <label for="surveyName">Name</label>
+              <input id="surveyName" type="text" placeholder="Your name (optional)" />
+            </div>
+
+            <div class="field">
+              <label for="q1">How satisfied were you with the overall service?</label>
+              <select id="q1" required>
+                <option value="">Select one</option>
+                <option value="1">Very Dissatisfied</option>
+                <option value="2">Dissatisfied</option>
+                <option value="3">Neutral</option>
+                <option value="4">Satisfied</option>
+                <option value="5">Very Satisfied</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="q2">How satisfied were you with the final results?</label>
+              <select id="q2" required>
+                <option value="">Select one</option>
+                <option value="1">Very Dissatisfied</option>
+                <option value="2">Dissatisfied</option>
+                <option value="3">Neutral</option>
+                <option value="4">Satisfied</option>
+                <option value="5">Very Satisfied</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="q3">How satisfied were you with the professionalism and communication?</label>
+              <select id="q3" required>
+                <option value="">Select one</option>
+                <option value="1">Very Dissatisfied</option>
+                <option value="2">Dissatisfied</option>
+                <option value="3">Neutral</option>
+                <option value="4">Satisfied</option>
+                <option value="5">Very Satisfied</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="q4">How satisfied were you with the overall process from start to finish?</label>
+              <select id="q4" required>
+                <option value="">Select one</option>
+                <option value="1">Very Dissatisfied</option>
+                <option value="2">Dissatisfied</option>
+                <option value="3">Neutral</option>
+                <option value="4">Satisfied</option>
+                <option value="5">Very Satisfied</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="q5">How likely are you to recommend us to a friend or neighbor?</label>
+              <select id="q5" required>
+                <option value="">Select one</option>
+                <option value="1">Very Unlikely</option>
+                <option value="2">Unlikely</option>
+                <option value="3">Neutral</option>
+                <option value="4">Likely</option>
+                <option value="5">Very Likely</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary full-width">Submit Survey</button>
+            <div id="surveyMessage" class="message"></div>
+
+            <div id="reviewPrompt" class="review-prompt hidden">
+              <p>
+                Appreciate you taking the time. That means a lot. If you’d be open to it,
+                would you mind sharing a quick review as well?
+              </p>
+              <button type="button" id="reviewPromptBtn" class="btn btn-secondary full-width">
+                Leave a Review
+              </button>
+            </div>
+          </form>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
