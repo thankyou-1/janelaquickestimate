@@ -5,6 +5,7 @@ export async function handler(event) {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -31,10 +32,10 @@ export async function handler(event) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    // Make sure it's still pending
+    // Verify it exists and is still pending
     const { data: existing, error: fetchErr } = await supabase
       .from('signature_requests')
-      .select('status, document_html, client_name')
+      .select('status, client_name')
       .eq('token', token)
       .single();
 
@@ -46,18 +47,40 @@ export async function handler(event) {
       return { statusCode: 409, headers, body: JSON.stringify({ error: 'Already signed' }) };
     }
 
-    const { error: updateErr } = await supabase
+    const signedAt = new Date().toISOString();
+    const resolvedName = signerName || existing.client_name || '';
+
+    // Try full update first (all columns)
+    const { error: fullErr } = await supabase
       .from('signature_requests')
       .update({
         status: 'signed',
         signature_data_url: signatureDataUrl,
-        signer_name: signerName || existing.client_name || '',
-        signed_at: new Date().toISOString(),
+        signer_name: resolvedName,
+        signed_at: signedAt,
       })
       .eq('token', token);
 
-    if (updateErr) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: updateErr.message }) };
+    if (fullErr) {
+      // Some columns may not exist yet — fall back to minimal update
+      const { error: minErr } = await supabase
+        .from('signature_requests')
+        .update({ status: 'signed' })
+        .eq('token', token);
+
+      if (minErr) {
+        return { statusCode: 500, headers, body: JSON.stringify({ error: minErr.message }) };
+      }
+
+      // Return success with a note to add the missing columns
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          warning: 'Signed (status only). Run ALTER TABLE to store signature image. See setup instructions.',
+        }),
+      };
     }
 
     return {
