@@ -21,9 +21,9 @@
     #doc-iframe {
       width: 100%;
       border: none;
-      border-radius: 12px;
       display: block;
-      min-height: 300px;
+      /* tall fallback until postMessage resizes it */
+      height: 1400px;
       background: #fff;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -83,16 +83,16 @@
       </p>
     </div>
 
-    <!-- Read indicator -->
+    <!-- Divider -->
     <div class="flex items-center gap-2 mb-3">
       <div class="flex-1 h-px bg-slate-200"></div>
-      <span class="text-xs text-slate-400 font-medium px-2">SCROLL TO READ FULL DOCUMENT</span>
+      <span class="text-xs text-slate-400 font-medium px-2">SCROLL TO READ</span>
       <div class="flex-1 h-px bg-slate-200"></div>
     </div>
 
-    <!-- Document rendered in iframe so all styles are self-contained -->
-    <div class="shadow-sm rounded-xl overflow-hidden border border-slate-200 mb-5">
-      <iframe id="doc-iframe" scrolling="no" title="Document"></iframe>
+    <!-- Document in iframe — sized by postMessage from inside -->
+    <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm mb-5 bg-white">
+      <iframe id="doc-iframe" title="Document to sign"></iframe>
     </div>
 
     <!-- Signature section -->
@@ -103,14 +103,12 @@
       <canvas id="sig-canvas" height="160"></canvas>
 
       <div class="flex items-center justify-between mt-3">
-        <button id="btn-clear" onclick="clearSig()"
-          class="text-xs text-slate-400 underline active:text-slate-800">
+        <button onclick="clearSig()" class="text-xs text-slate-400 underline active:text-slate-800">
           Clear &amp; Redo
         </button>
         <span id="sig-status" class="text-xs text-slate-400">Draw your signature above</span>
       </div>
 
-      <!-- Signer name -->
       <div class="mt-4">
         <label class="block text-xs font-medium text-slate-600 mb-1">Full Name (typed)</label>
         <input id="signer-name" type="text" placeholder="Your full name"
@@ -118,7 +116,6 @@
           style="font-size:16px" />
       </div>
 
-      <!-- Date -->
       <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -127,12 +124,10 @@
         Signing date: <span id="sign-date" class="font-medium text-slate-600"></span>
       </div>
 
-      <!-- Legal -->
       <p class="text-xs text-slate-400 mt-3 leading-relaxed">
         By signing, you confirm you have read this document and agree to its terms. Your electronic signature is legally binding.
       </p>
 
-      <!-- Submit -->
       <button id="btn-submit" onclick="submitSignature()"
         class="mt-4 w-full bg-teal-700 text-white font-bold py-4 rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         disabled>
@@ -148,9 +143,19 @@
     let token = null;
     let hasSig = false;
 
+    // Listen for height report from inside the iframe document
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'docHeight') {
+        var iframe = document.getElementById('doc-iframe');
+        if (iframe && e.data.height > 0) {
+          iframe.style.height = (e.data.height + 32) + 'px';
+        }
+      }
+    });
+
     function show(id) {
-      ['view-loading','view-error','view-done','view-success','view-main'].forEach(v => {
-        const el = document.getElementById(v);
+      ['view-loading','view-error','view-done','view-success','view-main'].forEach(function(v) {
+        var el = document.getElementById(v);
         el.classList.toggle('hidden', v !== id);
         el.classList.toggle('flex', v === id);
       });
@@ -162,11 +167,11 @@
       if (!token) { showError('No signing token in this URL.'); return; }
 
       document.getElementById('sign-date').textContent = new Date().toLocaleDateString('en-US', {
-        year:'numeric', month:'long', day:'numeric'
+        year: 'numeric', month: 'long', day: 'numeric'
       });
 
       try {
-        const res = await fetch(`/.netlify/functions/get-signing-request?token=${encodeURIComponent(token)}`);
+        const res = await fetch('/.netlify/functions/get-signing-request?token=' + encodeURIComponent(token));
         const data = await res.json();
 
         if (!res.ok) { showError(data.error || 'Failed to load document.'); return; }
@@ -176,24 +181,10 @@
         document.getElementById('doc-type-label').textContent = (data.documentType || 'Document') + ' for Review & Signature';
         document.getElementById('signer-name').value = data.clientName || '';
 
-        // Render document in iframe so all inline styles work correctly
-        const iframe = document.getElementById('doc-iframe');
-        iframe.srcdoc = data.documentHtml || '<p style="padding:20px;font-family:sans-serif;color:#666">No document content.</p>';
-
-        // Auto-size iframe to its content once loaded
-        iframe.onload = () => {
-          try {
-            const body = iframe.contentDocument.body;
-            const html = iframe.contentDocument.documentElement;
-            const h = Math.max(
-              body.scrollHeight, body.offsetHeight,
-              html.clientHeight, html.scrollHeight, html.offsetHeight
-            );
-            iframe.style.height = (h + 24) + 'px';
-          } catch(e) {
-            iframe.style.height = '600px';
-          }
-        };
+        // Set iframe srcdoc — the document HTML has a postMessage script inside
+        // that will report its height once rendered
+        var iframe = document.getElementById('doc-iframe');
+        iframe.srcdoc = data.documentHtml || '<p style="padding:20px;color:#666">No content.</p>';
 
         show('view-main');
         setupCanvas();
@@ -208,14 +199,14 @@
     }
 
     // ── Canvas ────────────────────────────────────────────────────────────
-    let canvas, ctx, drawing = false, lastX = 0, lastY = 0;
+    var canvas, ctx, drawing = false, lastX = 0, lastY = 0;
 
     function setupCanvas() {
       canvas = document.getElementById('sig-canvas');
       ctx = canvas.getContext('2d');
 
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      var rect = canvas.getBoundingClientRect();
       canvas.width = rect.width * dpr;
       canvas.height = 160 * dpr;
       ctx.scale(dpr, dpr);
@@ -224,40 +215,36 @@
       ctx.lineJoin = 'round';
       ctx.strokeStyle = '#1e293b';
 
-      canvas.addEventListener('touchstart', e => {
-        e.preventDefault();
-        drawing = true;
-        const t = e.touches[0], r = canvas.getBoundingClientRect();
+      canvas.addEventListener('touchstart', function(e) {
+        e.preventDefault(); drawing = true;
+        var t = e.touches[0], r = canvas.getBoundingClientRect();
         lastX = t.clientX - r.left; lastY = t.clientY - r.top;
       }, { passive: false });
 
-      canvas.addEventListener('touchmove', e => {
-        e.preventDefault();
-        if (!drawing) return;
-        const t = e.touches[0], r = canvas.getBoundingClientRect();
-        const x = t.clientX - r.left, y = t.clientY - r.top;
+      canvas.addEventListener('touchmove', function(e) {
+        e.preventDefault(); if (!drawing) return;
+        var t = e.touches[0], r = canvas.getBoundingClientRect();
+        var x = t.clientX - r.left, y = t.clientY - r.top;
         ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
-        lastX = x; lastY = y;
-        markHasSig();
+        lastX = x; lastY = y; markHasSig();
       }, { passive: false });
 
-      canvas.addEventListener('touchend', e => { e.preventDefault(); drawing = false; }, { passive: false });
+      canvas.addEventListener('touchend', function(e) { e.preventDefault(); drawing = false; }, { passive: false });
 
-      canvas.addEventListener('mousedown', e => {
+      canvas.addEventListener('mousedown', function(e) {
         drawing = true;
-        const r = canvas.getBoundingClientRect();
+        var r = canvas.getBoundingClientRect();
         lastX = e.clientX - r.left; lastY = e.clientY - r.top;
       });
-      canvas.addEventListener('mousemove', e => {
+      canvas.addEventListener('mousemove', function(e) {
         if (!drawing) return;
-        const r = canvas.getBoundingClientRect();
-        const x = e.clientX - r.left, y = e.clientY - r.top;
+        var r = canvas.getBoundingClientRect();
+        var x = e.clientX - r.left, y = e.clientY - r.top;
         ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
-        lastX = x; lastY = y;
-        markHasSig();
+        lastX = x; lastY = y; markHasSig();
       });
-      canvas.addEventListener('mouseup', () => { drawing = false; });
-      canvas.addEventListener('mouseleave', () => { drawing = false; });
+      canvas.addEventListener('mouseup', function() { drawing = false; });
+      canvas.addEventListener('mouseleave', function() { drawing = false; });
     }
 
     function markHasSig() {
@@ -270,7 +257,7 @@
 
     function clearSig() {
       if (!canvas) return;
-      const dpr = window.devicePixelRatio || 1;
+      var dpr = window.devicePixelRatio || 1;
       ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
       hasSig = false;
       canvas.classList.remove('has-sig');
@@ -282,32 +269,32 @@
     // ── Submit ────────────────────────────────────────────────────────────
     async function submitSignature() {
       if (!hasSig || !token) return;
-      const btn = document.getElementById('btn-submit');
+      var btn = document.getElementById('btn-submit');
       btn.disabled = true;
-      btn.innerHTML = `<svg class="spinner w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Submitting…`;
+      btn.innerHTML = '<svg class="spinner w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Submitting…';
 
       try {
-        const res = await fetch('/.netlify/functions/submit-signature', {
+        var res = await fetch('/.netlify/functions/submit-signature', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            token,
+            token: token,
             signatureDataUrl: canvas.toDataURL('image/png'),
             signerName: document.getElementById('signer-name').value.trim(),
           }),
         });
-        const data = await res.json();
+        var data = await res.json();
         if (res.ok && data.success) {
           show('view-success');
         } else {
           alert(data.error || 'Failed to submit. Please try again.');
           btn.disabled = false;
-          btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit`;
+          btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit';
         }
       } catch (e) {
         alert('Network error. Please check your connection.');
         btn.disabled = false;
-        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit`;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit';
       }
     }
 
