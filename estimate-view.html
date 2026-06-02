@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Your Estimate — Janela Enterprise</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; }
+
+    /* ── Full-height flex layout ── */
+    #app { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── Top banner ── */
+    #top-bar {
+      position: sticky; top: 0; z-index: 50;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    #top-bar .je-badge {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #0f766e; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 12px; flex-shrink: 0;
+    }
+    #top-bar .greeting { font-size: 13px; color: #0f172a; line-height: 1.4; }
+    #top-bar .greeting strong { color: #0f766e; }
+    #top-bar .greeting .sub { font-size: 11px; color: #64748b; margin-top: 1px; }
+
+    /* ── Scrollable document area ── */
+    #doc-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px;
+    }
+    #doc-content {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 20px 18px 28px;
+      max-width: 680px;
+      margin: 0 auto;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #0f172a;
+    }
+    /* Ensure document tables render correctly */
+    #doc-content table { width: 100%; border-collapse: collapse; }
+    #doc-content td, #doc-content th { padding: 6px 8px; border: 1px solid #e2e8f0; font-size: 12px; }
+    #doc-content th { background: #f8fafc; font-weight: 600; }
+    #doc-content img { max-width: 100%; height: auto; }
+
+    /* ── Bottom action panel ── */
+    #bottom-panel {
+      position: sticky; bottom: 0; z-index: 50;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      padding: 14px 16px;
+    }
+    #bottom-panel .prompt-text {
+      font-size: 13px; color: #475569; text-align: center; margin-bottom: 12px;
+      font-weight: 500;
+    }
+    #action-buttons {
+      display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+    }
+    .action-btn {
+      flex: 1; min-width: 80px; max-width: 160px;
+      padding: 13px 10px;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .action-btn:active { transform: scale(0.97); opacity: 0.85; }
+    .action-btn .icon { font-size: 20px; }
+    .action-btn .label { font-size: 11px; font-weight: 600; }
+
+    #btn-accept  { background: #dcfce7; color: #15803d; }
+    #btn-waiting { background: #fef9c3; color: #92400e; }
+    #btn-ask     { background: #eff6ff; color: #1d4ed8; }
+
+    /* ── Ask modal ── */
+    #ask-modal {
+      display: none;
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.45);
+      align-items: flex-end; justify-content: center;
+    }
+    #ask-modal.open { display: flex; }
+    #ask-sheet {
+      background: #fff; border-radius: 16px 16px 0 0;
+      padding: 20px 18px 36px;
+      width: 100%; max-width: 540px;
+    }
+    #ask-sheet h3 { margin: 0 0 10px; font-size: 16px; }
+    #ask-sheet p { margin: 0 0 12px; font-size: 13px; color: #475569; }
+    #ask-textarea {
+      width: 100%; min-height: 90px; padding: 10px 12px;
+      border: 1px solid #cbd5e1; border-radius: 8px;
+      font-size: 14px; font-family: inherit; resize: vertical;
+      outline: none;
+    }
+    #ask-textarea:focus { border-color: #0f766e; }
+    #ask-sheet-buttons { display: flex; gap: 10px; margin-top: 12px; }
+    #ask-cancel { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; font-size: 14px; cursor: pointer; }
+    #ask-send   { flex: 2; padding: 12px; border: none; border-radius: 8px; background: #0f766e; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    /* ── States ── */
+    #loading-state, #error-state, #done-state { display: none; }
+    #loading-state.show, #error-state.show, #done-state.show { display: flex; }
+
+    #loading-state, #error-state, #done-state {
+      flex-direction: column; align-items: center; justify-content: center;
+      min-height: 60vh; text-align: center; padding: 32px 24px;
+    }
+    .state-icon { font-size: 48px; margin-bottom: 14px; }
+    .state-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .state-sub { font-size: 13px; color: #64748b; max-width: 280px; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid #e2e8f0;
+      border-top-color: #0f766e; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Loading -->
+  <div id="loading-state" class="show" style="min-height:100vh;">
+    <div class="spinner"></div>
+    <div class="state-sub">Loading your estimate…</div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-state">
+    <div class="state-icon">⚠️</div>
+    <div class="state-title">Couldn't load estimate</div>
+    <div class="state-sub" id="error-msg">This link may be invalid or expired.</div>
+  </div>
+
+  <!-- Already responded -->
+  <div id="done-state">
+    <div class="state-icon" id="done-icon">✅</div>
+    <div class="state-title" id="done-title">Response received</div>
+    <div class="state-sub" id="done-sub">Thanks! Janela Enterprise has been notified.</div>
+  </div>
+
+  <!-- Main view -->
+  <div id="main-view" style="display:none; flex-direction:column; min-height:100vh;">
+
+    <!-- Top bar -->
+    <div id="top-bar">
+      <div class="je-badge">JE</div>
+      <div class="greeting">
+        <div>Hi <strong id="client-name-display">there</strong> 👋</div>
+        <div class="sub">Your estimate is ready — review it below and let us know what you think.</div>
+      </div>
+    </div>
+
+    <!-- Document -->
+    <div id="doc-wrapper">
+      <div id="doc-content"></div>
+    </div>
+
+    <!-- Bottom panel -->
+    <div id="bottom-panel">
+      <div class="prompt-text">What would you like to do?</div>
+      <div id="action-buttons">
+        <button class="action-btn" id="btn-accept" onclick="respond('accepted')">
+          <span class="icon">✅</span>
+          <span class="label">Accept</span>
+        </button>
+        <button class="action-btn" id="btn-waiting" onclick="respond('waiting')">
+          <span class="icon">⏳</span>
+          <span class="label">Thinking</span>
+        </button>
+        <button class="action-btn" id="btn-ask" onclick="openAsk()">
+          <span class="icon">💬</span>
+          <span class="label">Ask</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Ask modal -->
+<div id="ask-modal">
+  <div id="ask-sheet">
+    <h3>Ask a question</h3>
+    <p>Type your question or concern below and we'll get back to you.</p>
+    <textarea id="ask-textarea" placeholder="What would you like to know?"></textarea>
+    <div id="ask-sheet-buttons">
+      <button id="ask-cancel" onclick="closeAsk()">Cancel</button>
+      <button id="ask-send" onclick="submitAsk()">Send Question</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE = 'https://janelaquickestimate.netlify.app';
+  let currentToken = null;
+  let currentStatus = null;
+
+  function getToken() {
+    return new URLSearchParams(window.location.search).get('token');
+  }
+
+  function showState(id) {
+    ['loading-state','error-state','done-state','main-view'].forEach(s => {
+      const el = document.getElementById(s);
+      if (!el) return;
+      el.style.display = 'none';
+      el.classList.remove('show');
+    });
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.style.display = 'flex';
+    target.classList.add('show');
+  }
+
+  function injectDocument(html) {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      // Strip scripts for security
+      doc.querySelectorAll('script').forEach(s => s.remove());
+      // Pull the body content (or whole doc if no body)
+      const content = doc.body ? doc.body.innerHTML : html;
+      document.getElementById('doc-content').innerHTML = content;
+    } catch (e) {
+      document.getElementById('doc-content').innerHTML = '<p style="color:#dc2626">Could not render document.</p>';
+    }
+  }
+
+  async function loadEstimate() {
+    currentToken = getToken();
+    if (!currentToken) {
+      showState('error-state');
+      document.getElementById('error-msg').textContent = 'No token found in this link.';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE}/.netlify/functions/get-estimate-view?token=${encodeURIComponent(currentToken)}`);
+      if (!res.ok) throw new Error('Not found');
+      const data = await res.json();
+
+      currentStatus = data.status;
+
+      // If already responded, show done state
+      if (['accepted','waiting','asked'].includes(currentStatus)) {
+        showDoneForStatus(currentStatus, data.message);
+        return;
+      }
+
+      // Show the document
+      const name = data.clientName || 'there';
+      document.getElementById('client-name-display').textContent = name;
+      injectDocument(data.documentHtml || '');
+      showState('main-view');
+
+    } catch (e) {
+      showState('error-state');
+      document.getElementById('error-msg').textContent = e.message || 'This link may be invalid or expired.';
+    }
+  }
+
+  function showDoneForStatus(status, message) {
+    const iconEl = document.getElementById('done-icon');
+    const titleEl = document.getElementById('done-title');
+    const subEl   = document.getElementById('done-sub');
+    if (status === 'accepted') {
+      iconEl.textContent = '✅';
+      titleEl.textContent = 'Estimate accepted!';
+      subEl.textContent = 'Thank you! Janela Enterprise has been notified and will be in touch.';
+    } else if (status === 'waiting') {
+      iconEl.textContent = '⏳';
+      titleEl.textContent = 'Got it — still thinking';
+      subEl.textContent = 'We\'ll check back with you. Feel free to reach out if you\'re ready sooner.';
+    } else if (status === 'asked') {
+      iconEl.textContent = '💬';
+      titleEl.textContent = 'Question sent!';
+      subEl.textContent = message ? `"${message}"` : 'Janela Enterprise will follow up with you shortly.';
+    } else {
+      iconEl.textContent = '👍';
+      titleEl.textContent = 'Response received';
+      subEl.textContent = 'Thanks! Janela Enterprise has been notified.';
+    }
+    showState('done-state');
+  }
+
+  async function respond(responseType) {
+    if (!currentToken) return;
+    setButtonsDisabled(true);
+    try {
+      const res = await fetch(`${BASE}/.netlify/functions/update-estimate-response`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: currentToken, response: responseType }),
+      });
+      if (!res.ok) throw new Error('Server error');
+      showDoneForStatus(responseType, null);
+    } catch (e) {
+      alert('Something went wrong. Please try again.');
+      setButtonsDisabled(false);
+    }
+  }
+
+  function setButtonsDisabled(disabled) {
+    ['btn-accept','btn-waiting','btn-ask'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.disabled = disabled;
+    });
+  }
+
+  function openAsk() {
+    document.getElementById('ask-modal').classList.add('open');
+    document.getElementById('ask-textarea').focus();
+  }
+
+  function closeAsk() {
+    document.getElementById('ask-modal').classList.remove('open');
+  }
+
+  async function submitAsk() {
+    if (!currentToken) return;
+    const message = document.getElementById('ask-textarea').value.trim();
+    if (!message) {
+      document.getElementById('ask-textarea').focus();
+      return;
+    }
+    document.getElementById('ask-send').disabled = true;
+    document.getElementById('ask-send').textContent = 'Sending…';
+    try {
+      const res = await fetch(`${BASE}/.netlify/functions/update-estimate-response`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: currentToken, response: 'asked', message }),
+      });
+      if (!res.ok) throw new Error('Server error');
+      closeAsk();
+      showDoneForStatus('asked', message);
+    } catch (e) {
+      alert('Something went wrong. Please try again.');
+      document.getElementById('ask-send').disabled = false;
+      document.getElementById('ask-send').textContent = 'Send Question';
+    }
+  }
+
+  // Close ask modal on backdrop tap
+  document.getElementById('ask-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeAsk();
+  });
+
+  loadEstimate();
+</script>
+</body>
+</html>
