@@ -18,16 +18,14 @@
       width: 100%;
     }
     #sig-canvas.has-sig { border-color: #0f766e; border-style: solid; }
-    .doc-frame {
-      background: #fff;
+    #doc-iframe {
+      width: 100%;
+      border: none;
       border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      overflow-x: auto;
+      display: block;
+      min-height: 300px;
+      background: #fff;
     }
-    .doc-frame table { border-collapse: collapse; width: 100%; }
-    .doc-frame td, .doc-frame th { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 13px; }
-    .doc-frame th { background: #f8fafc; font-weight: 700; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner { animation: spin 0.8s linear infinite; }
   </style>
@@ -70,7 +68,7 @@
   <div id="view-main" class="hidden max-w-2xl mx-auto px-4 py-6 pb-32">
 
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-6">
+    <div class="flex items-center gap-3 mb-5">
       <div class="w-10 h-10 rounded-full bg-teal-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">JE</div>
       <div>
         <div class="font-bold text-slate-800 text-base">Janela Enterprise</div>
@@ -79,25 +77,34 @@
     </div>
 
     <!-- Client greeting -->
-    <div class="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-5">
+    <div class="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-4">
       <p class="text-teal-900 text-sm">
-        Hi <strong id="client-name-display">there</strong> 👋 — please review the document below and sign at the bottom to confirm.
+        Hi <strong id="client-name-display">there</strong> 👋 — please read the full document below, then sign at the bottom.
       </p>
     </div>
 
-    <!-- Document content -->
-    <div class="doc-frame mb-6" id="document-content"></div>
+    <!-- Read indicator -->
+    <div class="flex items-center gap-2 mb-3">
+      <div class="flex-1 h-px bg-slate-200"></div>
+      <span class="text-xs text-slate-400 font-medium px-2">SCROLL TO READ FULL DOCUMENT</span>
+      <div class="flex-1 h-px bg-slate-200"></div>
+    </div>
+
+    <!-- Document rendered in iframe so all styles are self-contained -->
+    <div class="shadow-sm rounded-xl overflow-hidden border border-slate-200 mb-5">
+      <iframe id="doc-iframe" scrolling="no" title="Document"></iframe>
+    </div>
 
     <!-- Signature section -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-      <h3 class="font-bold text-slate-800 mb-1 text-base">Your Signature</h3>
-      <p class="text-slate-400 text-xs mb-3">Sign in the box below using your finger or stylus</p>
+      <h3 class="font-bold text-slate-800 mb-1 text-base">✍️ Your Signature</h3>
+      <p class="text-slate-400 text-xs mb-3">Sign below using your finger</p>
 
       <canvas id="sig-canvas" height="160"></canvas>
 
       <div class="flex items-center justify-between mt-3">
         <button id="btn-clear" onclick="clearSig()"
-          class="text-xs text-slate-400 underline hover:text-slate-600 active:text-slate-800">
+          class="text-xs text-slate-400 underline active:text-slate-800">
           Clear &amp; Redo
         </button>
         <span id="sig-status" class="text-xs text-slate-400">Draw your signature above</span>
@@ -111,23 +118,23 @@
           style="font-size:16px" />
       </div>
 
-      <!-- Date (auto) -->
+      <!-- Date -->
       <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
         Signing date: <span id="sign-date" class="font-medium text-slate-600"></span>
       </div>
 
-      <!-- Consent -->
+      <!-- Legal -->
       <p class="text-xs text-slate-400 mt-3 leading-relaxed">
         By signing, you confirm you have read this document and agree to its terms. Your electronic signature is legally binding.
       </p>
 
       <!-- Submit -->
       <button id="btn-submit" onclick="submitSignature()"
-        class="mt-4 w-full bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-bold py-3.5 rounded-xl text-sm transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        class="mt-4 w-full bg-teal-700 text-white font-bold py-4 rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         disabled>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -138,22 +145,21 @@
   </div>
 
   <script>
-    // ── State ────────────────────────────────────────────────────────────
     let token = null;
     let hasSig = false;
 
-    // ── Bootstrap ────────────────────────────────────────────────────────
     function show(id) {
       ['view-loading','view-error','view-done','view-success','view-main'].forEach(v => {
-        document.getElementById(v).classList.toggle('hidden', v !== id);
-        document.getElementById(v).classList.toggle('flex', v === id);
+        const el = document.getElementById(v);
+        el.classList.toggle('hidden', v !== id);
+        el.classList.toggle('flex', v === id);
       });
     }
 
     async function init() {
       const params = new URLSearchParams(location.search);
       token = params.get('token');
-      if (!token) { showError('No signing token found in this URL.'); return; }
+      if (!token) { showError('No signing token in this URL.'); return; }
 
       document.getElementById('sign-date').textContent = new Date().toLocaleDateString('en-US', {
         year:'numeric', month:'long', day:'numeric'
@@ -166,11 +172,28 @@
         if (!res.ok) { showError(data.error || 'Failed to load document.'); return; }
         if (data.alreadySigned) { show('view-done'); return; }
 
-        // Populate
         document.getElementById('client-name-display').textContent = data.clientName || 'there';
         document.getElementById('doc-type-label').textContent = (data.documentType || 'Document') + ' for Review & Signature';
         document.getElementById('signer-name').value = data.clientName || '';
-        document.getElementById('document-content').innerHTML = data.documentHtml || '';
+
+        // Render document in iframe so all inline styles work correctly
+        const iframe = document.getElementById('doc-iframe');
+        iframe.srcdoc = data.documentHtml || '<p style="padding:20px;font-family:sans-serif;color:#666">No document content.</p>';
+
+        // Auto-size iframe to its content once loaded
+        iframe.onload = () => {
+          try {
+            const body = iframe.contentDocument.body;
+            const html = iframe.contentDocument.documentElement;
+            const h = Math.max(
+              body.scrollHeight, body.offsetHeight,
+              html.clientHeight, html.scrollHeight, html.offsetHeight
+            );
+            iframe.style.height = (h + 24) + 'px';
+          } catch(e) {
+            iframe.style.height = '600px';
+          }
+        };
 
         show('view-main');
         setupCanvas();
@@ -184,70 +207,52 @@
       show('view-error');
     }
 
-    // ── Signature Canvas ─────────────────────────────────────────────────
+    // ── Canvas ────────────────────────────────────────────────────────────
     let canvas, ctx, drawing = false, lastX = 0, lastY = 0;
 
     function setupCanvas() {
       canvas = document.getElementById('sig-canvas');
       ctx = canvas.getContext('2d');
 
-      // Size canvas to its CSS width
-      function resize() {
-        const rect = canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = rect.width * dpr;
-        canvas.height = 160 * dpr;
-        ctx.scale(dpr, dpr);
-        ctx.lineWidth = 2.5;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#1e293b';
-      }
-      resize();
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = 160 * dpr;
+      ctx.scale(dpr, dpr);
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#1e293b';
 
-      // Touch events
       canvas.addEventListener('touchstart', e => {
         e.preventDefault();
         drawing = true;
-        const t = e.touches[0];
-        const r = canvas.getBoundingClientRect();
-        lastX = t.clientX - r.left;
-        lastY = t.clientY - r.top;
+        const t = e.touches[0], r = canvas.getBoundingClientRect();
+        lastX = t.clientX - r.left; lastY = t.clientY - r.top;
       }, { passive: false });
 
       canvas.addEventListener('touchmove', e => {
         e.preventDefault();
         if (!drawing) return;
-        const t = e.touches[0];
-        const r = canvas.getBoundingClientRect();
-        const x = t.clientX - r.left;
-        const y = t.clientY - r.top;
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        const t = e.touches[0], r = canvas.getBoundingClientRect();
+        const x = t.clientX - r.left, y = t.clientY - r.top;
+        ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
         lastX = x; lastY = y;
         markHasSig();
       }, { passive: false });
 
       canvas.addEventListener('touchend', e => { e.preventDefault(); drawing = false; }, { passive: false });
 
-      // Mouse events (desktop)
       canvas.addEventListener('mousedown', e => {
         drawing = true;
         const r = canvas.getBoundingClientRect();
-        lastX = e.clientX - r.left;
-        lastY = e.clientY - r.top;
+        lastX = e.clientX - r.left; lastY = e.clientY - r.top;
       });
       canvas.addEventListener('mousemove', e => {
         if (!drawing) return;
         const r = canvas.getBoundingClientRect();
-        const x = e.clientX - r.left;
-        const y = e.clientY - r.top;
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
         lastX = x; lastY = y;
         markHasSig();
       });
@@ -260,7 +265,7 @@
       canvas.classList.add('has-sig');
       document.getElementById('sig-status').textContent = 'Signature captured ✓';
       document.getElementById('sig-status').className = 'text-xs text-teal-600 font-medium';
-      updateSubmitBtn();
+      document.getElementById('btn-submit').disabled = false;
     }
 
     function clearSig() {
@@ -271,56 +276,41 @@
       canvas.classList.remove('has-sig');
       document.getElementById('sig-status').textContent = 'Draw your signature above';
       document.getElementById('sig-status').className = 'text-xs text-slate-400';
-      updateSubmitBtn();
-    }
-
-    function updateSubmitBtn() {
-      const btn = document.getElementById('btn-submit');
-      btn.disabled = !hasSig;
+      document.getElementById('btn-submit').disabled = true;
     }
 
     // ── Submit ────────────────────────────────────────────────────────────
     async function submitSignature() {
       if (!hasSig || !token) return;
-
       const btn = document.getElementById('btn-submit');
       btn.disabled = true;
-      btn.innerHTML = `<svg class="spinner w-4 h-4" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-      </svg> Submitting…`;
-
-      const signatureDataUrl = canvas.toDataURL('image/png');
-      const signerName = document.getElementById('signer-name').value.trim();
+      btn.innerHTML = `<svg class="spinner w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Submitting…`;
 
       try {
         const res = await fetch('/.netlify/functions/submit-signature', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, signatureDataUrl, signerName }),
+          body: JSON.stringify({
+            token,
+            signatureDataUrl: canvas.toDataURL('image/png'),
+            signerName: document.getElementById('signer-name').value.trim(),
+          }),
         });
-
         const data = await res.json();
-
         if (res.ok && data.success) {
           show('view-success');
         } else {
           alert(data.error || 'Failed to submit. Please try again.');
           btn.disabled = false;
-          btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg> Sign & Submit`;
+          btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit`;
         }
       } catch (e) {
-        alert('Network error. Please check your connection and try again.');
+        alert('Network error. Please check your connection.');
         btn.disabled = false;
-        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg> Sign & Submit`;
+        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit`;
       }
     }
 
-    // ── Go ────────────────────────────────────────────────────────────────
     init();
   </script>
 </body>
