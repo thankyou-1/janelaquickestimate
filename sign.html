@@ -4,239 +4,319 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Sign Document — Janela Enterprise</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { -webkit-tap-highlight-color: transparent; }
-    body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; }
+
+    /* ── Full-height flex layout ── */
+    #app { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── Top banner ── */
+    #top-bar {
+      position: sticky; top: 0; z-index: 50;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    #top-bar .je-badge {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #0f766e; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 12px; flex-shrink: 0;
+    }
+    #top-bar .greeting { font-size: 13px; color: #0f172a; line-height: 1.4; }
+    #top-bar .greeting strong { color: #0f766e; }
+
+    /* ── Scrollable document area ── */
+    #doc-area {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0;
+      background: #fff;
+    }
+
+    /* ── Document content (injected) ── */
+    #doc-content {
+      padding: 20px 16px 32px;
+      max-width: 700px;
+      margin: 0 auto;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #111827;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    #doc-content table { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
+    #doc-content td, #doc-content th { border: 1px solid #e5e7eb; padding: 6px 10px; font-size: 12px; text-align: left; }
+    #doc-content th { background: #f3f4f6; font-weight: 700; }
+
+    /* ── Sticky sign panel ── */
+    #sign-panel {
+      position: sticky; bottom: 0; z-index: 50;
+      background: #fff;
+      border-top: 2px solid #e2e8f0;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+      padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 12px);
+    }
+    #sign-panel.expanded { /* when user taps to sign */ }
+
+    /* Collapsed state: just shows "Tap to sign" prompt */
+    #sign-prompt {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      cursor: pointer;
+    }
+    #sign-prompt .prompt-left { display: flex; align-items: center; gap: 10px; }
+    #sign-prompt .pen-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #0f766e; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    #sign-prompt .prompt-text { font-size: 14px; font-weight: 700; color: #0f172a; }
+    #sign-prompt .prompt-sub { font-size: 11px; color: #64748b; margin-top: 1px; }
+    #sign-prompt .arrow { font-size: 18px; color: #94a3b8; }
+
+    /* Expanded sign form */
+    #sign-form { display: none; }
+    #sign-form.open { display: block; }
+
     #sig-canvas {
-      cursor: crosshair;
       touch-action: none;
       border: 2px dashed #94a3b8;
-      border-radius: 12px;
-      background: #fff;
+      border-radius: 10px;
+      background: #f8fafc;
       display: block;
       width: 100%;
+      cursor: crosshair;
     }
-    #sig-canvas.has-sig { border-color: #0f766e; border-style: solid; }
-    #doc-frame {
-      width: 100%;
-      border: none;
-      display: block;
-      min-height: 500px;
-      background: #fff;
+    #sig-canvas.has-sig { border-color: #0f766e; border-style: solid; background: #fff; }
+
+    #btn-submit {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      background: #0f766e; color: #fff; font-size: 15px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 10px;
     }
+    #btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    #btn-submit:active { background: #0d5c56; }
+
+    /* ── Full-screen state overrides ── */
+    #view-loading, #view-error, #view-done, #view-success {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; gap: 16px; padding: 24px; text-align: center;
+    }
+    #view-loading.show, #view-error.show, #view-done.show, #view-success.show { display: flex; }
+    #app.show { display: flex; }
+    #app { display: none; }
+
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner { animation: spin 0.8s linear infinite; }
+
+    input[type=text] {
+      width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 8px 12px; font-size: 16px; color: #0f172a;
+      font-family: inherit; outline: none;
+    }
+    input[type=text]:focus { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15,118,110,0.1); }
   </style>
 </head>
-<body class="min-h-screen">
+<body>
 
   <!-- LOADING -->
-  <div id="view-loading" class="flex flex-col items-center justify-center min-h-screen gap-4 text-slate-500">
-    <svg class="spinner w-10 h-10 text-teal-600" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+  <div id="view-loading">
+    <svg class="spinner" style="width:44px;height:44px;color:#0f766e" fill="none" viewBox="0 0 24 24">
+      <circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path style="opacity:.75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
     </svg>
-    <p class="text-sm">Loading document…</p>
+    <p style="color:#64748b;font-size:14px;margin:0">Loading document…</p>
   </div>
 
   <!-- ERROR -->
-  <div id="view-error" class="hidden flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
-    <div class="text-5xl">⚠️</div>
-    <h2 class="text-xl font-bold text-slate-800">Document Not Found</h2>
-    <p id="error-msg" class="text-slate-500 text-sm max-w-xs">This signing link is invalid or has expired.</p>
+  <div id="view-error">
+    <div style="font-size:48px">⚠️</div>
+    <h2 style="margin:0;font-size:20px;color:#0f172a">Document Not Found</h2>
+    <p id="error-msg" style="margin:0;color:#64748b;font-size:14px;max-width:280px">This signing link is invalid or has expired.</p>
   </div>
 
   <!-- ALREADY SIGNED -->
-  <div id="view-done" class="hidden flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
-    <div class="text-6xl">✅</div>
-    <h2 class="text-xl font-bold text-slate-800">Document Already Signed</h2>
-    <p class="text-slate-500 text-sm max-w-xs">This document has already been signed. Thank you!</p>
-    <p class="text-teal-700 font-semibold text-sm">Janela Enterprise</p>
+  <div id="view-done">
+    <div style="font-size:56px">✅</div>
+    <h2 style="margin:0;font-size:20px;color:#0f172a">Already Signed</h2>
+    <p style="margin:0;color:#64748b;font-size:14px;max-width:280px">This document has already been signed. Thank you!</p>
+    <p style="color:#0f766e;font-weight:700;font-size:14px;margin:0">Janela Enterprise</p>
   </div>
 
   <!-- SUCCESS -->
-  <div id="view-success" class="hidden flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
-    <div class="text-6xl">🎉</div>
-    <h2 class="text-2xl font-bold text-slate-800">Signed!</h2>
-    <p class="text-slate-500 text-sm max-w-xs">Your signature has been saved. Janela Enterprise will have a copy on file.</p>
-    <p class="text-teal-700 font-semibold text-sm mt-2">Thank you for choosing Janela Enterprise!</p>
+  <div id="view-success">
+    <div style="font-size:60px">🎉</div>
+    <h2 style="margin:0;font-size:22px;color:#0f172a">You're all signed!</h2>
+    <p style="margin:0;color:#64748b;font-size:14px;max-width:280px">Your signature has been saved. Janela Enterprise has a copy on file.</p>
+    <p style="color:#0f766e;font-weight:700;font-size:14px;margin:0">Thank you for choosing Janela Enterprise!</p>
   </div>
 
-  <!-- MAIN -->
-  <div id="view-main" class="hidden max-w-2xl mx-auto px-4 py-6 pb-32">
+  <!-- MAIN APP -->
+  <div id="app">
 
-    <!-- Header -->
-    <div class="flex items-center gap-3 mb-5">
-      <div class="w-10 h-10 rounded-full bg-teal-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">JE</div>
+    <!-- Sticky top greeting -->
+    <div id="top-bar">
+      <div class="je-badge">JE</div>
       <div>
-        <div class="font-bold text-slate-800 text-base">Janela Enterprise</div>
-        <div id="doc-type-label" class="text-xs text-slate-500">Document for Review &amp; Signature</div>
+        <div id="doc-type-label" style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Service Agreement</div>
+        <div class="greeting">Hi <strong id="client-name-display">there</strong> 👋 — read the document below, then sign at the bottom</div>
       </div>
     </div>
 
-    <!-- Greeting -->
-    <div class="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-4">
-      <p class="text-teal-900 text-sm">
-        Hi <strong id="client-name-display">there</strong> 👋 — please read the full document below, then sign at the bottom.
-      </p>
+    <!-- Scrollable document -->
+    <div id="doc-area">
+      <div id="doc-content"></div>
     </div>
 
-    <div class="flex items-center gap-2 mb-3">
-      <div class="flex-1 h-px bg-slate-200"></div>
-      <span class="text-xs text-slate-400 font-medium px-2">SCROLL TO READ</span>
-      <div class="flex-1 h-px bg-slate-200"></div>
-    </div>
+    <!-- Sticky sign panel -->
+    <div id="sign-panel">
 
-    <!-- Document iframe -->
-    <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm mb-5 bg-white">
-      <iframe id="doc-frame" title="Document to sign" scrolling="no"></iframe>
-    </div>
-
-    <!-- Signature -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-      <h3 class="font-bold text-slate-800 mb-1 text-base">✍️ Your Signature</h3>
-      <p class="text-slate-400 text-xs mb-3">Sign below using your finger</p>
-
-      <canvas id="sig-canvas" height="160"></canvas>
-
-      <div class="flex items-center justify-between mt-3">
-        <button onclick="clearSig()" class="text-xs text-slate-400 underline active:text-slate-800">Clear &amp; Redo</button>
-        <span id="sig-status" class="text-xs text-slate-400">Draw your signature above</span>
+      <!-- Collapsed prompt (tap to expand) -->
+      <div id="sign-prompt" onclick="expandSign()">
+        <div class="prompt-left">
+          <div class="pen-icon">✍️</div>
+          <div>
+            <div class="prompt-text">Tap here to sign</div>
+            <div class="prompt-sub" id="sign-date-sub">—</div>
+          </div>
+        </div>
+        <div class="arrow">▲</div>
       </div>
 
-      <div class="mt-4">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Full Name (typed)</label>
-        <input id="signer-name" type="text" placeholder="Your full name"
-          class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          style="font-size:16px" />
+      <!-- Expanded sign form -->
+      <div id="sign-form">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700;color:#0f172a">Sign below</span>
+          <button onclick="collapseSign()" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:0">✕</button>
+        </div>
+
+        <canvas id="sig-canvas" height="130"></canvas>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;margin-bottom:10px">
+          <button onclick="clearSig()" style="background:none;border:none;color:#94a3b8;font-size:12px;text-decoration:underline;cursor:pointer;padding:0">Clear</button>
+          <span id="sig-status" style="font-size:12px;color:#94a3b8">Draw your signature above</span>
+        </div>
+
+        <input type="text" id="signer-name" placeholder="Full name (typed)" />
+
+        <button id="btn-submit" onclick="submitSignature()" disabled>
+          <svg style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+          Sign &amp; Submit
+        </button>
       </div>
-
-      <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
-        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-        Signing date: <span id="sign-date" class="font-medium text-slate-600"></span>
-      </div>
-
-      <p class="text-xs text-slate-400 mt-3 leading-relaxed">
-        By signing, you confirm you have read this document and agree to its terms. Your electronic signature is legally binding.
-      </p>
-
-      <button id="btn-submit" onclick="submitSignature()"
-        class="mt-4 w-full bg-teal-700 text-white font-bold py-4 rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        disabled>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
-        Sign &amp; Submit
-      </button>
     </div>
   </div>
 
   <script>
     var token = null;
     var hasSig = false;
-    var blobUrl = null;
+    var canvas, ctx, drawing = false, lastX = 0, lastY = 0;
 
-    // Receive height from inside the iframe
-    window.addEventListener('message', function(e) {
-      if (e.data && e.data.type === 'docHeight' && e.data.height > 0) {
-        var f = document.getElementById('doc-frame');
-        if (f) f.style.height = (e.data.height + 40) + 'px';
-        if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
-      }
-    });
-
-    function show(id) {
-      ['view-loading','view-error','view-done','view-success','view-main'].forEach(function(v) {
-        var el = document.getElementById(v);
-        el.classList.toggle('hidden', v !== id);
-        el.classList.toggle('flex', v === id);
+    function showView(id) {
+      ['view-loading','view-error','view-done','view-success'].forEach(function(v) {
+        document.getElementById(v).classList.toggle('show', v === id);
       });
+      document.getElementById('app').classList.toggle('show', id === 'app');
     }
 
     function showError(msg) {
       document.getElementById('error-msg').textContent = msg;
-      show('view-error');
+      showView('view-error');
     }
 
+    // ── Sign panel expand/collapse ──────────────────────────────────────
+    function expandSign() {
+      document.getElementById('sign-prompt').style.display = 'none';
+      document.getElementById('sign-form').classList.add('open');
+      setupCanvas();
+      setTimeout(function() {
+        document.getElementById('sign-panel').scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
+    }
+
+    function collapseSign() {
+      document.getElementById('sign-form').classList.remove('open');
+      document.getElementById('sign-prompt').style.display = '';
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────
     async function init() {
       var params = new URLSearchParams(location.search);
       token = params.get('token');
       if (!token) { showError('No signing token in this URL.'); return; }
 
-      document.getElementById('sign-date').textContent = new Date().toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
+      var today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+      document.getElementById('sign-date-sub').textContent = 'Date: ' + today;
 
       try {
         var res = await fetch('/.netlify/functions/get-signing-request?token=' + encodeURIComponent(token));
         var data = await res.json();
 
         if (!res.ok) { showError(data.error || 'Failed to load document.'); return; }
-        if (data.alreadySigned) { show('view-done'); return; }
+        if (data.alreadySigned) { showView('view-done'); return; }
 
         document.getElementById('client-name-display').textContent = data.clientName || 'there';
-        document.getElementById('doc-type-label').textContent = (data.documentType || 'Document') + ' for Review & Signature';
+        document.getElementById('doc-type-label').textContent = data.documentType || 'Document';
         document.getElementById('signer-name').value = data.clientName || '';
 
-        loadDocument(data.documentHtml);
-        show('view-main');
-        setupCanvas();
+        injectDocument(data.documentHtml || '');
+        showView('app');
       } catch (e) {
         showError('Could not load document. Please try again.');
       }
     }
 
-    function loadDocument(html) {
-      var iframe = document.getElementById('doc-frame');
+    function injectDocument(html) {
+      var target = document.getElementById('doc-content');
+      if (!html) { target.innerHTML = '<p style="color:#94a3b8;padding:20px">No document content.</p>'; return; }
 
-      // Build the HTML to render — ensure it has the postMessage height reporter
-      var docHtml = html || '';
-
-      // If the stored HTML doesn't have our postMessage script yet, inject it
-      var heightScript = '<script>function rh(){parent.postMessage({type:"docHeight",height:document.body.scrollHeight},"*");}window.addEventListener("load",rh);setTimeout(rh,200);setTimeout(rh,600);<\/script>';
-      if (docHtml.indexOf('docHeight') === -1) {
-        docHtml = docHtml.replace('</body>', heightScript + '</body>');
-        if (docHtml.indexOf(heightScript) === -1) {
-          // No </body> tag — wrap everything
-          docHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;padding:16px;font-family:-apple-system,sans-serif;color:#111827;background:#fff}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e5e7eb;padding:6px 10px;font-size:13px}th{background:#f3f4f6;font-weight:700}</style></head><body>' + docHtml + heightScript + '</body></html>';
-        }
-      }
-
-      // Use Blob URL — more reliable than srcdoc on iOS Safari
       try {
-        var blob = new Blob([docHtml], { type: 'text/html' });
-        blobUrl = URL.createObjectURL(blob);
-        iframe.src = blobUrl;
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+
+        // Remove script tags from the parsed doc
+        doc.querySelectorAll('script').forEach(function(s) { s.remove(); });
+
+        // Grab just the body inner content
+        var body = doc.body ? doc.body.innerHTML : html;
+        target.innerHTML = body;
       } catch(e) {
-        // Fallback: srcdoc
-        iframe.srcdoc = docHtml;
+        // Fallback: strip obvious script tags and inject
+        var safe = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+        // If it's a full HTML doc, try to grab body content
+        var bodyMatch = safe.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        target.innerHTML = bodyMatch ? bodyMatch[1] : safe;
       }
     }
 
-    // ── Canvas ───────────────────────────────────────────────────────────
-    var canvas, ctx, drawing = false, lastX = 0, lastY = 0;
-
+    // ── Canvas ────────────────────────────────────────────────────────────
+    var canvasReady = false;
     function setupCanvas() {
+      if (canvasReady) return;
       canvas = document.getElementById('sig-canvas');
+      if (!canvas) return;
       ctx = canvas.getContext('2d');
       var dpr = window.devicePixelRatio || 1;
       var rect = canvas.getBoundingClientRect();
       canvas.width = rect.width * dpr;
-      canvas.height = 160 * dpr;
+      canvas.height = 130 * dpr;
       ctx.scale(dpr, dpr);
       ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.strokeStyle = '#1e293b';
+      canvasReady = true;
 
       canvas.addEventListener('touchstart', function(e) {
         e.preventDefault(); drawing = true;
         var t = e.touches[0], r = canvas.getBoundingClientRect();
         lastX = t.clientX - r.left; lastY = t.clientY - r.top;
       }, { passive: false });
-
       canvas.addEventListener('touchmove', function(e) {
         e.preventDefault(); if (!drawing) return;
         var t = e.touches[0], r = canvas.getBoundingClientRect();
@@ -244,7 +324,6 @@
         ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
         lastX = x; lastY = y; markHasSig();
       }, { passive: false });
-
       canvas.addEventListener('touchend', function(e) { e.preventDefault(); drawing = false; }, { passive: false });
       canvas.addEventListener('mousedown', function(e) {
         drawing = true; var r = canvas.getBoundingClientRect();
@@ -264,7 +343,7 @@
       hasSig = true;
       canvas.classList.add('has-sig');
       document.getElementById('sig-status').textContent = 'Signature captured ✓';
-      document.getElementById('sig-status').className = 'text-xs text-teal-600 font-medium';
+      document.getElementById('sig-status').style.color = '#0f766e';
       document.getElementById('btn-submit').disabled = false;
     }
 
@@ -275,17 +354,16 @@
       hasSig = false;
       canvas.classList.remove('has-sig');
       document.getElementById('sig-status').textContent = 'Draw your signature above';
-      document.getElementById('sig-status').className = 'text-xs text-slate-400';
+      document.getElementById('sig-status').style.color = '#94a3b8';
       document.getElementById('btn-submit').disabled = true;
     }
 
-    // ── Submit ───────────────────────────────────────────────────────────
+    // ── Submit ─────────────────────────────────────────────────────────
     async function submitSignature() {
       if (!hasSig || !token) return;
       var btn = document.getElementById('btn-submit');
       btn.disabled = true;
-      btn.innerHTML = '<svg class="spinner w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Submitting…';
-
+      btn.innerHTML = '<svg class="spinner" style="width:16px;height:16px;flex-shrink:0" fill="none" viewBox="0 0 24 24"><circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path style="opacity:.75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Submitting…';
       try {
         var res = await fetch('/.netlify/functions/submit-signature', {
           method: 'POST',
@@ -298,19 +376,20 @@
         });
         var data = await res.json();
         if (res.ok && data.success) {
-          show('view-success');
+          showView('view-success');
         } else {
           alert(data.error || 'Failed to submit. Please try again.');
           btn.disabled = false;
-          btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit';
+          btn.innerHTML = '<svg style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Sign & Submit';
         }
       } catch(e) {
         alert('Network error. Please check your connection.');
         btn.disabled = false;
-        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sign & Submit';
+        btn.innerHTML = '<svg style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Sign & Submit';
       }
     }
 
+    showView('view-loading');
     init();
   </script>
 </body>
