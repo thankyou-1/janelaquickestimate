@@ -24,7 +24,7 @@ export async function handler(event) {
 
   const { data, error } = await supabase
     .from('estimate_views')
-    .select('status, response, message, viewed_at, responded_at')
+    .select('status, response, message, preferred_week, preferred_time_of_day, viewed_at, responded_at')
     .eq('token', token)
     .single();
 
@@ -40,6 +40,8 @@ export async function handler(event) {
       status: data.status,
       response: data.response || null,
       message: data.message || null,
+      preferredWeek: data.preferred_week || null,
+      preferredTimeOfDay: data.preferred_time_of_day || null,
       viewedAt: data.viewed_at || null,
       respondedAt: data.responded_at || null,
     }),

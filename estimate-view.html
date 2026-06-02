@@ -9,120 +9,136 @@
     html, body { margin: 0; padding: 0; height: 100%; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; }
 
-    /* ── Full-height flex layout ── */
     #app { display: flex; flex-direction: column; min-height: 100vh; }
 
-    /* ── Top banner ── */
+    /* Top bar */
     #top-bar {
       position: sticky; top: 0; z-index: 50;
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 12px 16px;
-      display: flex; align-items: center; gap: 12px;
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      padding: 12px 16px; display: flex; align-items: center; gap: 12px;
     }
-    #top-bar .je-badge {
+    .je-badge {
       width: 36px; height: 36px; border-radius: 50%;
       background: #0f766e; color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 12px; flex-shrink: 0;
     }
-    #top-bar .greeting { font-size: 13px; color: #0f172a; line-height: 1.4; }
-    #top-bar .greeting strong { color: #0f766e; }
-    #top-bar .greeting .sub { font-size: 11px; color: #64748b; margin-top: 1px; }
+    .greeting { font-size: 13px; color: #0f172a; line-height: 1.4; }
+    .greeting strong { color: #0f766e; }
+    .greeting .sub { font-size: 11px; color: #64748b; margin-top: 1px; }
 
-    /* ── Scrollable document area ── */
+    /* Document area */
     #doc-wrapper {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 16px;
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px;
     }
     #doc-content {
-      background: #fff;
-      border-radius: 10px;
+      background: #fff; border-radius: 10px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      padding: 20px 18px 28px;
-      max-width: 680px;
-      margin: 0 auto;
-      font-size: 13px;
-      line-height: 1.6;
-      color: #0f172a;
+      padding: 20px 18px 28px; max-width: 680px; margin: 0 auto;
+      font-size: 13px; line-height: 1.6; color: #0f172a;
     }
-    /* Ensure document tables render correctly */
     #doc-content table { width: 100%; border-collapse: collapse; }
     #doc-content td, #doc-content th { padding: 6px 8px; border: 1px solid #e2e8f0; font-size: 12px; }
     #doc-content th { background: #f8fafc; font-weight: 600; }
     #doc-content img { max-width: 100%; height: auto; }
 
-    /* ── Bottom action panel ── */
+    /* ── Scheduling section ── */
+    #schedule-section {
+      max-width: 680px; margin: 12px auto 0; padding: 0 0 4px;
+    }
+    #schedule-section .sec-label {
+      font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px; padding: 0 2px;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .week-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;
+    }
+    .week-chip {
+      padding: 9px 6px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+      background: #fff; font-size: 11px; font-weight: 600; text-align: center;
+      cursor: pointer; color: #334155; line-height: 1.3; transition: all 0.12s;
+    }
+    .week-chip:active { transform: scale(0.97); }
+    .week-chip.selected { border-color: #0f766e; background: #ccfbf1; color: #0f766e; }
+    .week-chip .wk-range { font-size: 10px; color: #64748b; font-weight: 500; }
+    .week-chip.selected .wk-range { color: #0f766e; }
+
+    .time-row { display: flex; gap: 10px; margin-bottom: 0; }
+    .time-chip {
+      flex: 1; padding: 11px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+      background: #fff; font-size: 13px; font-weight: 600; text-align: center;
+      cursor: pointer; color: #334155; transition: all 0.12s;
+    }
+    .time-chip:active { transform: scale(0.97); }
+    .time-chip.selected { border-color: #0f766e; background: #ccfbf1; color: #0f766e; }
+
+    /* Bottom panel */
     #bottom-panel {
       position: sticky; bottom: 0; z-index: 50;
-      background: #fff;
-      border-top: 1px solid #e2e8f0;
-      padding: 14px 16px;
+      background: #fff; border-top: 1px solid #e2e8f0; padding: 14px 16px;
     }
     #bottom-panel .prompt-text {
-      font-size: 13px; color: #475569; text-align: center; margin-bottom: 12px;
-      font-weight: 500;
+      font-size: 13px; color: #475569; text-align: center; margin-bottom: 12px; font-weight: 500;
     }
-    #action-buttons {
-      display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-    }
+    #action-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .action-btn {
-      flex: 1; min-width: 80px; max-width: 160px;
-      padding: 13px 10px;
-      border: none; border-radius: 10px;
+      flex: 1; min-width: 80px; max-width: 160px; padding: 13px 10px;
+      border: 2px solid transparent; border-radius: 10px;
       font-size: 14px; font-weight: 600; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; gap: 4px;
-      transition: opacity 0.15s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
+      transition: all 0.15s; -webkit-tap-highlight-color: transparent;
     }
     .action-btn:active { transform: scale(0.97); opacity: 0.85; }
     .action-btn .icon { font-size: 20px; }
     .action-btn .label { font-size: 11px; font-weight: 600; }
-
     #btn-accept  { background: #dcfce7; color: #15803d; }
     #btn-waiting { background: #fef9c3; color: #92400e; }
     #btn-ask     { background: #eff6ff; color: #1d4ed8; }
+    /* Selected state — shows which was tapped */
+    .action-btn.responded { border-color: currentColor; opacity: 1; }
+    .action-btn.dimmed { opacity: 0.45; }
 
-    /* ── Ask modal ── */
+    /* Toast banner */
+    #toast {
+      display: none; position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      z-index: 200; background: #0f766e; color: #fff;
+      padding: 10px 20px; border-radius: 24px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18); white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Ask modal */
     #ask-modal {
-      display: none;
-      position: fixed; inset: 0; z-index: 100;
-      background: rgba(0,0,0,0.45);
-      align-items: flex-end; justify-content: center;
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.45); align-items: flex-end; justify-content: center;
     }
     #ask-modal.open { display: flex; }
     #ask-sheet {
       background: #fff; border-radius: 16px 16px 0 0;
-      padding: 20px 18px 36px;
-      width: 100%; max-width: 540px;
+      padding: 20px 18px 36px; width: 100%; max-width: 540px;
     }
     #ask-sheet h3 { margin: 0 0 10px; font-size: 16px; }
     #ask-sheet p { margin: 0 0 12px; font-size: 13px; color: #475569; }
     #ask-textarea {
       width: 100%; min-height: 90px; padding: 10px 12px;
       border: 1px solid #cbd5e1; border-radius: 8px;
-      font-size: 14px; font-family: inherit; resize: vertical;
-      outline: none;
+      font-size: 14px; font-family: inherit; resize: vertical; outline: none;
     }
     #ask-textarea:focus { border-color: #0f766e; }
     #ask-sheet-buttons { display: flex; gap: 10px; margin-top: 12px; }
     #ask-cancel { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; font-size: 14px; cursor: pointer; }
     #ask-send   { flex: 2; padding: 12px; border: none; border-radius: 8px; background: #0f766e; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
 
-    /* ── States ── */
-    #loading-state, #error-state, #done-state { display: none; }
-    #loading-state.show, #error-state.show, #done-state.show { display: flex; }
-
-    #loading-state, #error-state, #done-state {
+    /* Loading / error states */
+    #loading-state, #error-state { display: none; }
+    #loading-state.show, #error-state.show { display: flex; }
+    #loading-state, #error-state {
       flex-direction: column; align-items: center; justify-content: center;
-      min-height: 60vh; text-align: center; padding: 32px 24px;
+      min-height: 100vh; text-align: center; padding: 32px 24px;
     }
     .state-icon { font-size: 48px; margin-bottom: 14px; }
     .state-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
     .state-sub { font-size: 13px; color: #64748b; max-width: 280px; }
-
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner {
       width: 36px; height: 36px; border: 3px solid #e2e8f0;
@@ -147,33 +163,34 @@
     <div class="state-sub" id="error-msg">This link may be invalid or expired.</div>
   </div>
 
-  <!-- Already responded -->
-  <div id="done-state">
-    <div class="state-icon" id="done-icon">✅</div>
-    <div class="state-title" id="done-title">Response received</div>
-    <div class="state-sub" id="done-sub">Thanks! Janela Enterprise has been notified.</div>
-  </div>
-
-  <!-- Main view -->
+  <!-- Main view (always stays visible after responding) -->
   <div id="main-view" style="display:none; flex-direction:column; min-height:100vh;">
 
-    <!-- Top bar -->
     <div id="top-bar">
       <div class="je-badge">JE</div>
       <div class="greeting">
         <div>Hi <strong id="client-name-display">there</strong> 👋</div>
-        <div class="sub">Your estimate is ready — review it below and let us know what you think.</div>
+        <div class="sub" id="top-sub">Review your estimate below and let us know!</div>
       </div>
     </div>
 
-    <!-- Document -->
     <div id="doc-wrapper">
       <div id="doc-content"></div>
+
+      <!-- Scheduling preference section -->
+      <div id="schedule-section">
+        <div class="sec-label">📅 Preferred week (within 60 days)</div>
+        <div class="week-grid" id="week-grid"></div>
+        <div class="sec-label" style="margin-top:4px;">🕐 Preferred time of day</div>
+        <div class="time-row">
+          <div class="time-chip" id="chip-morning" onclick="selectTime('Morning')">🌅 Morning</div>
+          <div class="time-chip" id="chip-afternoon" onclick="selectTime('Afternoon')">☀️ Afternoon</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Bottom panel -->
     <div id="bottom-panel">
-      <div class="prompt-text">What would you like to do?</div>
+      <div class="prompt-text" id="panel-prompt">What would you like to do?</div>
       <div id="action-buttons">
         <button class="action-btn" id="btn-accept" onclick="respond('accepted')">
           <span class="icon">✅</span>
@@ -193,11 +210,14 @@
 
 </div>
 
+<!-- Toast -->
+<div id="toast"></div>
+
 <!-- Ask modal -->
 <div id="ask-modal">
   <div id="ask-sheet">
     <h3>Ask a question</h3>
-    <p>Type your question or concern below and we'll get back to you.</p>
+    <p>Type your question or concern and we'll get back to you.</p>
     <textarea id="ask-textarea" placeholder="What would you like to know?"></textarea>
     <div id="ask-sheet-buttons">
       <button id="ask-cancel" onclick="closeAsk()">Cancel</button>
@@ -209,43 +229,116 @@
 <script>
   const BASE = 'https://janelaquickestimate.netlify.app';
   let currentToken = null;
-  let currentStatus = null;
+  let selectedWeek = null;    // "Week of Jun 9" style string
+  let selectedTimeOfDay = null; // "Morning" | "Afternoon"
+  let alreadyResponded = false;
 
+  // ── Build week options ────────────────────────────────────────────────────
+  function buildWeekGrid() {
+    const grid = document.getElementById('week-grid');
+    const today = new Date();
+    // Start from next Monday (or this Monday if today is Monday)
+    const dow = today.getDay();
+    const daysUntilMon = dow === 0 ? 1 : (8 - dow) % 7 || 7;
+    const start = new Date(today);
+    start.setDate(today.getDate() + (dow === 1 ? 0 : daysUntilMon));
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    // Generate up to 8 weeks that fall within 60 days
+    for (let w = 0; w < 9; w++) {
+      const monDate = new Date(start);
+      monDate.setDate(start.getDate() + w * 7);
+      const diff = Math.round((monDate - today) / 86400000);
+      if (diff > 60) break;
+
+      const friDate = new Date(monDate);
+      friDate.setDate(monDate.getDate() + 4);
+
+      const label = `${months[monDate.getMonth()]} ${monDate.getDate()}`;
+      const range = `${months[monDate.getMonth()]} ${monDate.getDate()} – ${months[friDate.getMonth()]} ${friDate.getDate()}`;
+      const weekKey = `Week of ${label}`; // what gets saved
+
+      const chip = document.createElement('div');
+      chip.className = 'week-chip';
+      chip.dataset.week = weekKey;
+      chip.innerHTML = `<div>${weekKey.replace('Week of ','')}</div><div class="wk-range">${range}</div>`;
+      chip.onclick = () => selectWeek(weekKey, chip);
+      grid.appendChild(chip);
+    }
+  }
+
+  function selectWeek(weekKey, chipEl) {
+    selectedWeek = weekKey;
+    document.querySelectorAll('.week-chip').forEach(c => c.classList.remove('selected'));
+    chipEl.classList.add('selected');
+  }
+
+  function selectTime(time) {
+    selectedTimeOfDay = time;
+    document.getElementById('chip-morning').classList.toggle('selected', time === 'Morning');
+    document.getElementById('chip-afternoon').classList.toggle('selected', time === 'Afternoon');
+  }
+
+  // ── Load estimate ─────────────────────────────────────────────────────────
   function getToken() {
     return new URLSearchParams(window.location.search).get('token');
   }
 
-  function showState(id) {
-    ['loading-state','error-state','done-state','main-view'].forEach(s => {
-      const el = document.getElementById(s);
-      if (!el) return;
-      el.style.display = 'none';
-      el.classList.remove('show');
-    });
-    const target = document.getElementById(id);
-    if (!target) return;
-    target.style.display = 'flex';
-    target.classList.add('show');
+  function showToast(msg, ms = 2800) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, ms);
   }
 
   function injectDocument(html) {
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      // Strip scripts for security
       doc.querySelectorAll('script').forEach(s => s.remove());
-      // Pull the body content (or whole doc if no body)
-      const content = doc.body ? doc.body.innerHTML : html;
-      document.getElementById('doc-content').innerHTML = content;
-    } catch (e) {
+      document.getElementById('doc-content').innerHTML = doc.body ? doc.body.innerHTML : html;
+    } catch {
       document.getElementById('doc-content').innerHTML = '<p style="color:#dc2626">Could not render document.</p>';
     }
+  }
+
+  function showMain() {
+    document.getElementById('loading-state').classList.remove('show');
+    document.getElementById('error-state').classList.remove('show');
+    const mv = document.getElementById('main-view');
+    mv.style.display = 'flex';
+  }
+
+  function markButtonResponded(responseType) {
+    const map = { accepted: 'btn-accept', waiting: 'btn-waiting', asked: 'btn-ask' };
+    ['btn-accept','btn-waiting','btn-ask'].forEach(id => {
+      const btn = document.getElementById(id);
+      btn.classList.remove('responded','dimmed');
+      if (id === map[responseType]) {
+        btn.classList.add('responded');
+      } else if (id !== 'btn-accept') {
+        // Always keep Accept active; dim the others
+        btn.classList.add('dimmed');
+      }
+    });
+    // Update prompt
+    const prompts = {
+      accepted: "✅ You accepted — we'll be in touch!",
+      waiting:  "⏳ Got it! Feel free to accept when ready.",
+      asked:    "💬 Question sent! You can still accept below.",
+    };
+    document.getElementById('panel-prompt').textContent = prompts[responseType] || "Response sent!";
+    document.getElementById('top-sub').textContent = "Thanks! You can keep reviewing the estimate.";
   }
 
   async function loadEstimate() {
     currentToken = getToken();
     if (!currentToken) {
-      showState('error-state');
+      document.getElementById('loading-state').classList.remove('show');
+      const err = document.getElementById('error-state');
+      err.classList.add('show');
       document.getElementById('error-msg').textContent = 'No token found in this link.';
       return;
     }
@@ -255,50 +348,28 @@
       if (!res.ok) throw new Error('Not found');
       const data = await res.json();
 
-      currentStatus = data.status;
-
-      // If already responded, show done state
-      if (['accepted','waiting','asked'].includes(currentStatus)) {
-        showDoneForStatus(currentStatus, data.message);
-        return;
-      }
-
-      // Show the document
       const name = data.clientName || 'there';
       document.getElementById('client-name-display').textContent = name;
       injectDocument(data.documentHtml || '');
-      showState('main-view');
+      buildWeekGrid();
+      showMain();
+
+      // If already responded, reflect that in the UI but keep doc visible
+      const responded = ['accepted','waiting','asked'];
+      if (responded.includes(data.status)) {
+        alreadyResponded = true;
+        markButtonResponded(data.status);
+      }
 
     } catch (e) {
-      showState('error-state');
+      document.getElementById('loading-state').classList.remove('show');
+      const err = document.getElementById('error-state');
+      err.classList.add('show');
       document.getElementById('error-msg').textContent = e.message || 'This link may be invalid or expired.';
     }
   }
 
-  function showDoneForStatus(status, message) {
-    const iconEl = document.getElementById('done-icon');
-    const titleEl = document.getElementById('done-title');
-    const subEl   = document.getElementById('done-sub');
-    if (status === 'accepted') {
-      iconEl.textContent = '✅';
-      titleEl.textContent = 'Estimate accepted!';
-      subEl.textContent = 'Thank you! Janela Enterprise has been notified and will be in touch.';
-    } else if (status === 'waiting') {
-      iconEl.textContent = '⏳';
-      titleEl.textContent = 'Got it — still thinking';
-      subEl.textContent = 'We\'ll check back with you. Feel free to reach out if you\'re ready sooner.';
-    } else if (status === 'asked') {
-      iconEl.textContent = '💬';
-      titleEl.textContent = 'Question sent!';
-      subEl.textContent = message ? `"${message}"` : 'Janela Enterprise will follow up with you shortly.';
-    } else {
-      iconEl.textContent = '👍';
-      titleEl.textContent = 'Response received';
-      subEl.textContent = 'Thanks! Janela Enterprise has been notified.';
-    }
-    showState('done-state');
-  }
-
+  // ── Respond ───────────────────────────────────────────────────────────────
   async function respond(responseType) {
     if (!currentToken) return;
     setButtonsDisabled(true);
@@ -306,12 +377,25 @@
       const res = await fetch(`${BASE}/.netlify/functions/update-estimate-response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: currentToken, response: responseType }),
+        body: JSON.stringify({
+          token: currentToken,
+          response: responseType,
+          preferredWeek: selectedWeek || null,
+          preferredTimeOfDay: selectedTimeOfDay || null,
+        }),
       });
       if (!res.ok) throw new Error('Server error');
-      showDoneForStatus(responseType, null);
-    } catch (e) {
+      alreadyResponded = true;
+      markButtonResponded(responseType);
+
+      const toasts = {
+        accepted: "✅ Estimate accepted — thank you!",
+        waiting:  "⏳ Got it, we'll follow up!",
+      };
+      if (toasts[responseType]) showToast(toasts[responseType]);
+    } catch {
       alert('Something went wrong. Please try again.');
+    } finally {
       setButtonsDisabled(false);
     }
   }
@@ -323,9 +407,10 @@
     });
   }
 
+  // ── Ask modal ─────────────────────────────────────────────────────────────
   function openAsk() {
     document.getElementById('ask-modal').classList.add('open');
-    document.getElementById('ask-textarea').focus();
+    setTimeout(() => document.getElementById('ask-textarea').focus(), 80);
   }
 
   function closeAsk() {
@@ -335,29 +420,36 @@
   async function submitAsk() {
     if (!currentToken) return;
     const message = document.getElementById('ask-textarea').value.trim();
-    if (!message) {
-      document.getElementById('ask-textarea').focus();
-      return;
-    }
-    document.getElementById('ask-send').disabled = true;
-    document.getElementById('ask-send').textContent = 'Sending…';
+    if (!message) { document.getElementById('ask-textarea').focus(); return; }
+
+    const sendBtn = document.getElementById('ask-send');
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending…';
     try {
       const res = await fetch(`${BASE}/.netlify/functions/update-estimate-response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: currentToken, response: 'asked', message }),
+        body: JSON.stringify({
+          token: currentToken,
+          response: 'asked',
+          message,
+          preferredWeek: selectedWeek || null,
+          preferredTimeOfDay: selectedTimeOfDay || null,
+        }),
       });
       if (!res.ok) throw new Error('Server error');
       closeAsk();
-      showDoneForStatus('asked', message);
-    } catch (e) {
+      alreadyResponded = true;
+      markButtonResponded('asked');
+      showToast('💬 Question sent!');
+    } catch {
       alert('Something went wrong. Please try again.');
-      document.getElementById('ask-send').disabled = false;
-      document.getElementById('ask-send').textContent = 'Send Question';
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send Question';
     }
   }
 
-  // Close ask modal on backdrop tap
   document.getElementById('ask-modal').addEventListener('click', function(e) {
     if (e.target === this) closeAsk();
   });

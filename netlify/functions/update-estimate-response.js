@@ -17,7 +17,7 @@ export async function handler(event) {
   }
 
   try {
-    const { token, response, message } = JSON.parse(event.body || '{}');
+    const { token, response, message, preferredWeek, preferredTimeOfDay } = JSON.parse(event.body || '{}');
 
     // response must be one of: accepted | waiting | asked
     if (!token || !['accepted', 'waiting', 'asked'].includes(response)) {
@@ -50,6 +50,8 @@ export async function handler(event) {
         status: response,
         response,
         message: message || null,
+        preferred_week: preferredWeek || null,
+        preferred_time_of_day: preferredTimeOfDay || null,
         responded_at: new Date().toISOString(),
       })
       .eq('token', token);
