@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sign Document — Janela Enterprise</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    #sig-canvas {
+      cursor: crosshair;
+      touch-action: none;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      background: #fff;
+      display: block;
+      width: 100%;
+    }
+    #sig-canvas.has-sig { border-color: #0f766e; border-style: solid; }
+    .doc-frame {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+    .doc-frame table { border-collapse: collapse; width: 100%; }
+    .doc-frame td, .doc-frame th { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 13px; }
+    .doc-frame th { background: #f8fafc; font-weight: 700; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- LOADING STATE -->
+  <div id="view-loading" class="flex flex-col items-center justify-center min-h-screen gap-4 text-slate-500">
+    <svg class="spinner w-10 h-10 text-teal-600" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+    </svg>
+    <p class="text-sm">Loading document…</p>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div id="view-error" class="hidden flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
+    <div class="text-5xl">⚠️</div>
+    <h2 class="text-xl font-bold text-slate-800">Document Not Found</h2>
+    <p id="error-msg" class="text-slate-500 text-sm max-w-xs">This signing link is invalid or has expired.</p>
+  </div>
+
+  <!-- ALREADY SIGNED STATE -->
+  <div id="view-done" class="hidden flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
+    <div class="text-6xl">✅</div>
+    <h2 class="text-xl font-bold text-slate-800">Document Already Signed</h2>
+    <p class="text-slate-500 text-sm max-w-xs">This document has already been signed. Thank you!</p>
+    <p class="text-teal-700 font-semibold text-sm">Janela Enterprise</p>
+  </div>
+
+  <!-- SUBMIT SUCCESS STATE -->
+  <div id="view-success" class="hidden flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
+    <div class="text-6xl">🎉</div>
+    <h2 class="text-2xl font-bold text-slate-800">Signed!</h2>
+    <p class="text-slate-500 text-sm max-w-xs">Your signature has been saved. Janela Enterprise will have a copy on file.</p>
+    <p class="text-teal-700 font-semibold text-sm mt-2">Thank you for choosing Janela Enterprise!</p>
+  </div>
+
+  <!-- MAIN SIGNING VIEW -->
+  <div id="view-main" class="hidden max-w-2xl mx-auto px-4 py-6 pb-32">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-full bg-teal-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">JE</div>
+      <div>
+        <div class="font-bold text-slate-800 text-base">Janela Enterprise</div>
+        <div id="doc-type-label" class="text-xs text-slate-500">Document for Review &amp; Signature</div>
+      </div>
+    </div>
+
+    <!-- Client greeting -->
+    <div class="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-5">
+      <p class="text-teal-900 text-sm">
+        Hi <strong id="client-name-display">there</strong> 👋 — please review the document below and sign at the bottom to confirm.
+      </p>
+    </div>
+
+    <!-- Document content -->
+    <div class="doc-frame mb-6" id="document-content"></div>
+
+    <!-- Signature section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <h3 class="font-bold text-slate-800 mb-1 text-base">Your Signature</h3>
+      <p class="text-slate-400 text-xs mb-3">Sign in the box below using your finger or stylus</p>
+
+      <canvas id="sig-canvas" height="160"></canvas>
+
+      <div class="flex items-center justify-between mt-3">
+        <button id="btn-clear" onclick="clearSig()"
+          class="text-xs text-slate-400 underline hover:text-slate-600 active:text-slate-800">
+          Clear &amp; Redo
+        </button>
+        <span id="sig-status" class="text-xs text-slate-400">Draw your signature above</span>
+      </div>
+
+      <!-- Signer name -->
+      <div class="mt-4">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Full Name (typed)</label>
+        <input id="signer-name" type="text" placeholder="Your full name"
+          class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          style="font-size:16px" />
+      </div>
+
+      <!-- Date (auto) -->
+      <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        Signing date: <span id="sign-date" class="font-medium text-slate-600"></span>
+      </div>
+
+      <!-- Consent -->
+      <p class="text-xs text-slate-400 mt-3 leading-relaxed">
+        By signing, you confirm you have read this document and agree to its terms. Your electronic signature is legally binding.
+      </p>
+
+      <!-- Submit -->
+      <button id="btn-submit" onclick="submitSignature()"
+        class="mt-4 w-full bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-bold py-3.5 rounded-xl text-sm transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        Sign &amp; Submit
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ── State ────────────────────────────────────────────────────────────
+    let token = null;
+    let hasSig = false;
+
+    // ── Bootstrap ────────────────────────────────────────────────────────
+    function show(id) {
+      ['view-loading','view-error','view-done','view-success','view-main'].forEach(v => {
+        document.getElementById(v).classList.toggle('hidden', v !== id);
+        document.getElementById(v).classList.toggle('flex', v === id);
+      });
+    }
+
+    async function init() {
+      const params = new URLSearchParams(location.search);
+      token = params.get('token');
+      if (!token) { showError('No signing token found in this URL.'); return; }
+
+      document.getElementById('sign-date').textContent = new Date().toLocaleDateString('en-US', {
+        year:'numeric', month:'long', day:'numeric'
+      });
+
+      try {
+        const res = await fetch(`/.netlify/functions/get-signing-request?token=${encodeURIComponent(token)}`);
+        const data = await res.json();
+
+        if (!res.ok) { showError(data.error || 'Failed to load document.'); return; }
+        if (data.alreadySigned) { show('view-done'); return; }
+
+        // Populate
+        document.getElementById('client-name-display').textContent = data.clientName || 'there';
+        document.getElementById('doc-type-label').textContent = (data.documentType || 'Document') + ' for Review & Signature';
+        document.getElementById('signer-name').value = data.clientName || '';
+        document.getElementById('document-content').innerHTML = data.documentHtml || '';
+
+        show('view-main');
+        setupCanvas();
+      } catch (e) {
+        showError('Could not load document. Please try again.');
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('error-msg').textContent = msg;
+      show('view-error');
+    }
+
+    // ── Signature Canvas ─────────────────────────────────────────────────
+    let canvas, ctx, drawing = false, lastX = 0, lastY = 0;
+
+    function setupCanvas() {
+      canvas = document.getElementById('sig-canvas');
+      ctx = canvas.getContext('2d');
+
+      // Size canvas to its CSS width
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = 160 * dpr;
+        ctx.scale(dpr, dpr);
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#1e293b';
+      }
+      resize();
+
+      // Touch events
+      canvas.addEventListener('touchstart', e => {
+        e.preventDefault();
+        drawing = true;
+        const t = e.touches[0];
+        const r = canvas.getBoundingClientRect();
+        lastX = t.clientX - r.left;
+        lastY = t.clientY - r.top;
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', e => {
+        e.preventDefault();
+        if (!drawing) return;
+        const t = e.touches[0];
+        const r = canvas.getBoundingClientRect();
+        const x = t.clientX - r.left;
+        const y = t.clientY - r.top;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastX = x; lastY = y;
+        markHasSig();
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', e => { e.preventDefault(); drawing = false; }, { passive: false });
+
+      // Mouse events (desktop)
+      canvas.addEventListener('mousedown', e => {
+        drawing = true;
+        const r = canvas.getBoundingClientRect();
+        lastX = e.clientX - r.left;
+        lastY = e.clientY - r.top;
+      });
+      canvas.addEventListener('mousemove', e => {
+        if (!drawing) return;
+        const r = canvas.getBoundingClientRect();
+        const x = e.clientX - r.left;
+        const y = e.clientY - r.top;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastX = x; lastY = y;
+        markHasSig();
+      });
+      canvas.addEventListener('mouseup', () => { drawing = false; });
+      canvas.addEventListener('mouseleave', () => { drawing = false; });
+    }
+
+    function markHasSig() {
+      hasSig = true;
+      canvas.classList.add('has-sig');
+      document.getElementById('sig-status').textContent = 'Signature captured ✓';
+      document.getElementById('sig-status').className = 'text-xs text-teal-600 font-medium';
+      updateSubmitBtn();
+    }
+
+    function clearSig() {
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      hasSig = false;
+      canvas.classList.remove('has-sig');
+      document.getElementById('sig-status').textContent = 'Draw your signature above';
+      document.getElementById('sig-status').className = 'text-xs text-slate-400';
+      updateSubmitBtn();
+    }
+
+    function updateSubmitBtn() {
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = !hasSig;
+    }
+
+    // ── Submit ────────────────────────────────────────────────────────────
+    async function submitSignature() {
+      if (!hasSig || !token) return;
+
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="spinner w-4 h-4" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+      </svg> Submitting…`;
+
+      const signatureDataUrl = canvas.toDataURL('image/png');
+      const signerName = document.getElementById('signer-name').value.trim();
+
+      try {
+        const res = await fetch('/.netlify/functions/submit-signature', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, signatureDataUrl, signerName }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          show('view-success');
+        } else {
+          alert(data.error || 'Failed to submit. Please try again.');
+          btn.disabled = false;
+          btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg> Sign & Submit`;
+        }
+      } catch (e) {
+        alert('Network error. Please check your connection and try again.');
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg> Sign & Submit`;
+      }
+    }
+
+    // ── Go ────────────────────────────────────────────────────────────────
+    init();
+  </script>
+</body>
+</html>
