@@ -4,3 +4,9 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
+[functions."scheduled-follow-ups"]
+  schedule = "0 9,13,17 * * *"
