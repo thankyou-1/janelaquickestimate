@@ -10,7 +10,7 @@ export async function handler(event) {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
-  const { clientId, phone, limit = '100' } = event.queryStringParameters || {};
+  const { clientId, phone, limit = '100', order = 'asc' } = event.queryStringParameters || {};
   if (!clientId && !phone) return { statusCode: 400, headers, body: JSON.stringify({ error: 'clientId or phone required' }) };
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -18,7 +18,7 @@ export async function handler(event) {
   let query = supabase
     .from('messages')
     .select('id, created_at, direction, body, status, from_number, to_number, client_id, client_name')
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: order !== 'desc' })
     .limit(parseInt(limit));
 
   if (clientId) {
