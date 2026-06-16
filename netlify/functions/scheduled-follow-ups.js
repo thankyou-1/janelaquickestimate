@@ -44,20 +44,30 @@ export async function handler(event) {
 
   for (const msg of queued) {
     try {
-      // Check if client replied since this was scheduled — if so, cancel it
-      const { data: inbound } = await supabase
+      // Check if client replied OR app already sent something since this was scheduled
+      const { data: recentMsgs } = await supabase
         .from('messages')
-        .select('id')
+        .select('id, direction')
         .eq('client_id', msg.client_id)
-        .eq('direction', 'inbound')
         .gte('created_at', msg.created_at)
-        .limit(1);
+        .limit(10);
 
-      if (inbound && inbound.length > 0) {
-        // Client replied — mark cancelled, don't send
+      const clientReplied = recentMsgs?.some(m => m.direction === 'inbound');
+      const alreadySent = recentMsgs?.some(m => m.direction === 'outbound');
+
+      if (clientReplied) {
         await supabase
           .from('scheduled_messages')
           .update({ status: 'cancelled', note: 'client replied before send' })
+          .eq('id', msg.id);
+        continue;
+      }
+
+      if (alreadySent) {
+        // App was open and sent it already — mark as sent to avoid confusion
+        await supabase
+          .from('scheduled_messages')
+          .update({ status: 'sent', note: 'sent by app before cron ran', sent_at: new Date().toISOString() })
           .eq('id', msg.id);
         continue;
       }
