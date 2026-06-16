@@ -14,21 +14,35 @@ export async function handler(event) {
   let payload;
   try { payload = JSON.parse(event.body); } catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
 
-  const { messages } = payload;
+  let { messages } = payload;
   if (!Array.isArray(messages) || messages.length === 0) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'messages array required' }) };
   }
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-  // Cancel any existing pending follow-ups for these client IDs first
+  // replace=true: cancel existing pending rows before inserting (new sequence start)
+  // replace=false (default/sync): skip clients that already have pending rows
+  const replace = payload.replace !== false; // default true for new sequences
   const clientIds = [...new Set(messages.map(m => m.client_id).filter(Boolean))];
-  if (clientIds.length > 0) {
-    await supabase
+
+  if (replace) {
+    if (clientIds.length > 0) {
+      await supabase
+        .from('scheduled_messages')
+        .update({ status: 'cancelled', note: 'replaced by new sequence' })
+        .in('client_id', clientIds)
+        .eq('status', 'pending');
+    }
+  } else {
+    // Sync mode: find which clients already have pending rows and exclude them
+    const { data: existing } = await supabase
       .from('scheduled_messages')
-      .update({ status: 'cancelled', note: 'replaced by new sequence' })
+      .select('client_id')
       .in('client_id', clientIds)
       .eq('status', 'pending');
+    const alreadyQueued = new Set((existing || []).map(r => r.client_id));
+    messages = messages.filter(m => !alreadyQueued.has(m.client_id));
   }
 
   // Insert new scheduled messages (skip any missing required fields)
