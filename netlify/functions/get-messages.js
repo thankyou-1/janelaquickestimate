@@ -1,14 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
+import { requireApiKey } from './utils/auth.js';
 
 export async function handler(event) {
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Api-Key',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
   };
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+
+  const authErr = requireApiKey(event, headers);
+  if (authErr) return authErr;
 
   const { clientId, phone, limit = '100', order = 'asc' } = event.queryStringParameters || {};
   if (!clientId && !phone) return { statusCode: 400, headers, body: JSON.stringify({ error: 'clientId or phone required' }) };

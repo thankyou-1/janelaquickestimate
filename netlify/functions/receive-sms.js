@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { validateTwilioSignature } from './utils/auth.js';
 
 // Twilio posts inbound SMS here as application/x-www-form-urlencoded
 export async function handler(event) {
@@ -8,6 +9,11 @@ export async function handler(event) {
     headers: { 'Content-Type': 'text/xml' },
     body: '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
   };
+
+  if (!validateTwilioSignature(event)) {
+    console.warn('receive-sms: invalid Twilio signature — rejected');
+    return { statusCode: 403, body: 'Forbidden' };
+  }
 
   try {
     const params = new URLSearchParams(event.body || '');
@@ -20,20 +26,21 @@ export async function handler(event) {
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-    // Try to find which client this is from by matching phone number
-    // against the most recent outbound message we sent to that number
-    const { data: lastOut } = await supabase
+    // Match this number to a client via any prior message (either direction)
+    // that carried a client_id — not just the last outbound, so people who
+    // text first or reply after a long gap still land in the right thread.
+    const { data: known } = await supabase
       .from('messages')
       .select('client_id, client_name')
-      .eq('to_number', from)
-      .eq('direction', 'outbound')
+      .or(`to_number.eq.${from},from_number.eq.${from}`)
+      .neq('client_id', '')
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
+    const match = known?.[0];
 
     await supabase.from('messages').insert({
-      client_id:   lastOut?.client_id   || '',
-      client_name: lastOut?.client_name || '',
+      client_id:   match?.client_id   || '',
+      client_name: match?.client_name || '',
       direction:   'inbound',
       body,
       status:      'received',
@@ -41,6 +48,23 @@ export async function handler(event) {
       from_number: from,
       to_number:   to,
     });
+
+    // Opt-out: Twilio blocks future sends at the carrier level, but we also
+    // cancel our queued follow-ups so the cron stops attempting them.
+    if (/^\s*(stop|stopall|unsubscribe|cancel|end|quit)\s*$/i.test(body)) {
+      await supabase
+        .from('scheduled_messages')
+        .update({ status: 'cancelled', note: 'client texted STOP' })
+        .eq('status', 'pending')
+        .eq('to_number', from);
+      if (match?.client_id) {
+        await supabase
+          .from('scheduled_messages')
+          .update({ status: 'cancelled', note: 'client texted STOP' })
+          .eq('status', 'pending')
+          .eq('client_id', match.client_id);
+      }
+    }
 
   } catch (err) {
     console.warn('receive-sms error:', err.message);

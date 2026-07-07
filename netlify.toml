@@ -8,5 +8,7 @@
 [[plugins]]
   package = "@netlify/plugin-functions-install-core"
 
+# Times are UTC: 14/18/22 = 10am/2pm/6pm EDT (9am/1pm/5pm EST).
+# The function itself re-checks the 7am-7pm window in BUSINESS_TZ.
 [functions."scheduled-follow-ups"]
-  schedule = "0 9,13,17 * * *"
+  schedule = "0 14,18,22 * * *"

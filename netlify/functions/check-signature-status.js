@@ -1,14 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
+import { requireApiKey } from './utils/auth.js';
 
 export async function handler(event) {
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Api-Key',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
   };
 
   if (event.httpMethod === 'OPTIONS') {
+
+  const authErr = requireApiKey(event, headers);
+  if (authErr) return authErr;
     return { statusCode: 200, headers, body: '' };
   }
 
